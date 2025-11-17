@@ -140,7 +140,7 @@ jobs:
             if jq -e '.status' integrity-output.json >/dev/null 2>&1; then
               STATUS=$(jq -r 'if (.status | type == "number") then .status else 1 end' integrity-output.json)
               ISSUE_COUNT=$(jq -r '.data.issues | length // 0' integrity-output.json)
-              ISSUE_DETAILS=$(jq -r '.data.issues[]? | "- " + (.detail // "Unknown issue") + " → " + (.referencingFile // "Unknown file")' integrity-output.json)
+              ISSUE_DETAILS=$(jq -r '.data.issues[]? | "- " + (.detail // "Unknown issue") + " → `" + (.referencingFile // "Unknown file") + "`"' integrity-output.json)
             else
               STATUS=${COMMAND_STATUS:-1}
               ISSUE_DETAILS="Failed to parse metadata integrity output."
@@ -164,9 +164,8 @@ jobs:
             const details = `${{ steps.integrity.outputs.issue_details }}`.trim();
             const issuesSection = details ? `**Issues:**\n\n${details}` : '';
             const bodySections = [
-              '❌ **Metadata integrity issues detected**',
-              `Scan inspected the last ${gitDepth || 'N/A'} commit(s).`,
-              `Found ${issueCount} metadata integrity issue${issueCount === 1 ? '' : 's'}.`,
+              '⚠️ **Metadata integrity issues detected**',
+              `Scan inspected last ${gitDepth || 'N/A'} commit(s) within pull-request and found ${issueCount} metadata integrity issue${issueCount === 1 ? '' : 's'}.`,
               issuesSection,
               '⚡ Powered by [sf-swift plugin](https://www.npmjs.com/package/sf-swift)'
             ].filter(Boolean);
