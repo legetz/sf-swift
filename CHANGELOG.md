@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - _No changes yet._
 
+## [1.0.14] - 2025-11-17
+
+### Added
+- 🧾 **Workflow Documentation**: Expanded the README GitHub Actions section with coverage for `pr-check-adjust.yml` and `pr-code-adjust.yml` so teams understand when each automation runs.
+
+### Changed
+- 💬 **Integrity Workflow Messaging**: Updated PR comments from `pr-check-adjust.yml` to wrap file paths in inline code for clearer formatting.
+
 ## [1.0.13] - 2025-11-13
 
 ### Added
@@ -104,7 +112,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Features
 - **Command**: `sf swift metadata adjust` - Main command for sorting metadata files
 
-[Unreleased]: https://github.com/legetz/sf-swift/compare/v1.0.13...HEAD
+[Unreleased]: https://github.com/legetz/sf-swift/compare/v1.0.14...HEAD
+[1.0.14]: https://github.com/legetz/sf-swift/releases/tag/v1.0.14
 [1.0.13]: https://github.com/legetz/sf-swift/releases/tag/v1.0.13
 [1.0.12]: https://github.com/legetz/sf-swift/releases/tag/v1.0.12
 [1.0.11]: https://github.com/legetz/sf-swift/releases/tag/v1.0.11
