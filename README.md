@@ -355,12 +355,17 @@ This plugin ships with ready-to-use workflows:
 - `.github/workflows/pr-metadata-adjust.yml` adjusts metadata files in pull requests
 - `.github/workflows/pr-detect-issues.yml` fails the PR when `.rej` files are found and comments with the list
 - `.github/workflows/pr-check-adjust.yml` gates formatting jobs by running conflict and metadata-integrity checks up front
+- `.github/workflows/pr-code-adjust.yml` runs Prettier-based Apex formatting and auto-commits the results
 
 `pr-check-adjust.yml` overview:
 
 - **check-rej-files**: runs `sf swift detect git conflicts`, comments with a reject-file list, and fails on leftover `.rej` files.
 - **check-integrity**: inspects every commit in the PR with `sf swift metadata integrity`, comments on detected issues, and blocks subsequent jobs when problems remain.
 - **adjust-code** / **adjust-metadata**: formatting stages that only run after both guard jobs succeed, ensuring they never hide metadata issues under auto-fixes.
+
+`pr-code-adjust.yml` overview:
+
+- **adjust**: calculates the PR commit count, executes `prettier-fix-delta.sh <commit_count>` to reformat Apex classes and triggers with Prettier, commits updated `.cls`/`.trigger` files when changes occur, retries the push up to three times, and posts a summary comment on the pull request.
 
 #### Metadata adjust workflow (`.github/workflows/pr-metadata-adjust.yml`)
 
