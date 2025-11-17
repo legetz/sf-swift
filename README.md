@@ -350,10 +350,17 @@ Returns a summary of deleted metadata and outstanding references. Use `--json` t
 
 ### GitHub Actions
 
-This plugin ships with two ready-to-use workflows:
+This plugin ships with ready-to-use workflows:
 
 - `.github/workflows/pr-metadata-adjust.yml` adjusts metadata files in pull requests
 - `.github/workflows/pr-detect-issues.yml` fails the PR when `.rej` files are found and comments with the list
+- `.github/workflows/pr-check-adjust.yml` gates formatting jobs by running conflict and metadata-integrity checks up front
+
+`pr-check-adjust.yml` overview:
+
+- **check-rej-files**: runs `sf swift detect git conflicts`, comments with a reject-file list, and fails on leftover `.rej` files.
+- **check-integrity**: inspects every commit in the PR with `sf swift metadata integrity`, comments on detected issues, and blocks subsequent jobs when problems remain.
+- **adjust-code** / **adjust-metadata**: formatting stages that only run after both guard jobs succeed, ensuring they never hide metadata issues under auto-fixes.
 
 #### Metadata adjust workflow (`.github/workflows/pr-metadata-adjust.yml`)
 
