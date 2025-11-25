@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- _No changes yet._
+
+## [1.0.15] - 2025-11-25
+
 ### Fixed
 - 🔢 **List View Filters**: Metadata adjust now keeps `<filters>` arrays unsorted inside `listView-meta.xml` files so `booleanFilter` expressions continue to reference the correct clauses.
 
@@ -113,7 +117,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Features
 - **Command**: `sf swift metadata adjust` - Main command for sorting metadata files
 
-[Unreleased]: https://github.com/legetz/sf-swift/compare/v1.0.14...HEAD
+[Unreleased]: https://github.com/legetz/sf-swift/compare/v1.0.15...HEAD
+[1.0.15]: https://github.com/legetz/sf-swift/releases/tag/v1.0.15
 [1.0.14]: https://github.com/legetz/sf-swift/releases/tag/v1.0.14
 [1.0.13]: https://github.com/legetz/sf-swift/releases/tag/v1.0.13
 [1.0.12]: https://github.com/legetz/sf-swift/releases/tag/v1.0.12
