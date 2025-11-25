@@ -7,7 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- _No changes yet._
+### Fixed
+- 🔢 **List View Filters**: Metadata adjust now keeps `<filters>` arrays unsorted inside `listView-meta.xml` files so `booleanFilter` expressions continue to reference the correct clauses.
 
 ## [1.0.14] - 2025-11-17
 

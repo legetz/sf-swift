@@ -229,6 +229,32 @@ describe("common/xml/sorter", () => {
       expect(result.customPermissions[0].name[0]).to.equal("ViewData");
       expect(result.customPermissions[1].name[0]).to.equal("viewData");
     });
+
+    it("should preserve filter ordering for list view metadata", () => {
+      const filePath = "objects/Test__c/listViews/Last30Days.listView-meta.xml";
+      const input = {
+        filters: [
+          {
+            field: ["CREATED_DATE"],
+            operation: ["equals"],
+            value: ["TODAY"]
+          },
+          {
+            field: ["CREATED_DATE"],
+            operation: ["equals"],
+            value: ["LAST_N_DAYS:30"]
+          }
+        ],
+        booleanFilter: ["1 OR 2"],
+        fullName: ["Last30Days"]
+      };
+
+      const result = sortXmlElements(input, undefined, filePath);
+
+      expect(result.filters[0].value[0]).to.equal("TODAY");
+      expect(result.filters[1].value[0]).to.equal("LAST_N_DAYS:30");
+      expect(result.booleanFilter[0]).to.equal("1 OR 2");
+    });
   });
 
   describe("Case-sensitive sorting validation", () => {

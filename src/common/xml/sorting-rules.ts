@@ -29,7 +29,8 @@ export const DEFAULT_SORTING_RULES: SortingRule[] = [
   },
   {
     filePattern: "listView-meta.xml",
-    priorityKeys: ["fullName"]
+    priorityKeys: ["fullName"],
+    unsortedArrays: ["filters"]
   },
   {
     filePattern: "labels-meta.xml",
