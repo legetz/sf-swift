@@ -2,7 +2,7 @@ import { expect } from "chai";
 import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
-import { findFilesBySuffix } from "../../../src/common/helper/file-finder.js";
+import { findFilesBySuffix, findFilesBySuffixes } from "../../../src/common/helper/file-finder.js";
 
 describe("common/helper/file-finder", () => {
   const tempDirs: string[] = [];
@@ -85,5 +85,38 @@ describe("common/helper/file-finder", () => {
     const result = findFilesBySuffix(root, ".rej", { skipDirectories: ["skip-me"] });
 
     expect(result).to.deep.equal([processedFile]);
+  });
+
+  it("should find files for multiple suffixes", () => {
+    const root = createTempDir();
+    const files = [path.join(root, "a.rej"), path.join(root, "b.log"), path.join(root, "c.tmp")];
+    files.forEach((file) => fs.writeFileSync(file, "content"));
+
+    const result = findFilesBySuffixes(root, [".rej", ".log"]);
+
+    expect(result).to.have.lengthOf(2);
+    expect(result).to.deep.include.members([files[0], files[1]]);
+    expect(result).to.not.include(files[2]);
+  });
+
+  it("should stop after reaching max matches", () => {
+    const root = createTempDir();
+    for (let i = 0; i < 3; i += 1) {
+      fs.writeFileSync(path.join(root, `file-${i}.rej`), "content");
+    }
+
+    const result = findFilesBySuffixes(root, [".rej"], { maxMatches: 1 });
+
+    expect(result).to.have.lengthOf(1);
+  });
+
+  it("should handle duplicate suffix inputs", () => {
+    const root = createTempDir();
+    const first = path.join(root, "dup.rej");
+    fs.writeFileSync(first, "dup");
+
+    const result = findFilesBySuffixes(root, [".rej", "rej", ".rej"]);
+
+    expect(result).to.deep.equal([first]);
   });
 });

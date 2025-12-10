@@ -20,6 +20,7 @@ A fast and powerful Salesforce CLI plugin with utilities for metadata formatting
 - [`sf swift metadata adjust`](#command-sf-swift-metadata-adjust)
 - [`sf swift metadata integrity`](#command-sf-swift-metadata-integrity)
 - [`sf swift detect git conflicts`](#command-sf-swift-detect-git-conflicts)
+- [`sf swift detect file`](#command-sf-swift-detect-file)
 
 ## Installation
 
@@ -263,6 +264,58 @@ Default output is human-readable and includes a summary plus any `.rej` file pat
 - Fail CI checks whenever metadata merges leave behind `.rej` files
 - Provide actionable feedback in PR comments (see workflows below)
 - Run locally before committing to ensure no conflict leftovers are staged
+
+## Command: `sf swift detect file`
+
+Scans any directory tree for arbitrary file suffixes (e.g., `.rej`, `.log`, `.tmp`) so CI workflows can halt when unwanted artifacts slip into pull requests.
+
+### Quick start
+
+```bash
+# Look for reject and log files in the current directory
+sf swift detect file --type .rej --type .log
+
+# Scan a subdirectory and stop after the first match
+sf swift detect file ./force-app --type .tmp --max 1
+
+# Emit machine-readable JSON output
+sf swift detect file --type .rej --json
+```
+
+### Flags
+
+| Flag | Short | Description | Default |
+|------|-------|-------------|---------|
+| `--target-dir` | `-d` | Directory to scan when no positional path is supplied | `.` (current) |
+| `--type` | `-t` | Repeatable suffix filter (e.g., `.rej`, `.log`). Required. | – |
+| `--max` | – | Stop the scan once this many matches have been collected | unlimited |
+| `--json` | – | Return machine-readable output | Disabled |
+
+### Output
+
+The human-readable output mirrors the git conflict detector: emoji headings, elapsed time, and a numbered list of matching files relative to the scan root. Use `--json` to integrate with automation.
+
+```json
+{
+   "status": 1,
+   "result": {
+      "count": 3,
+      "types": [".rej", ".log"],
+      "files": [
+         "force-app/main/default/classes/Foo.cls-meta.xml.rej",
+         "scripts/tmp/apex.log",
+         "scripts/tmp/trace.log"
+      ]
+   },
+   "warnings": []
+}
+```
+
+### When to use it
+
+- Reuse the same detector for `.rej`, `.tmp`, `.log`, or any other unwanted artifacts
+- Speed up scans in large repos with `--max 1` when you only need to know a file exists
+- Augment GitHub Actions by feeding the JSON payload into custom comment bots or gating logic
 
 ## Command: `sf swift metadata integrity`
 

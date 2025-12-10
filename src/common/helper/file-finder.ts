@@ -14,32 +14,65 @@ export interface FindFilesOptions {
   skipDirectories?: string[];
 }
 
+export interface FindFilesBySuffixesOptions extends FindFilesOptions {
+  /** Stop after collecting this many matches (optional) */
+  maxMatches?: number;
+}
+
+function normalizeSuffix(value: string): string {
+  return value.startsWith(".") ? value : `.${value}`;
+}
+
 /**
  * Find files recursively whose names end with the provided suffix.
  * @param dir - Directory to start scanning from.
  * @param suffix - File name suffix (with or without leading dot).
  * @param options - Optional configuration for skipped directories.
  */
-export function findFilesBySuffix(dir: string, suffix: string, options: FindFilesOptions = {}): string[] {
-  const normalizedSuffix = suffix.startsWith(".") ? suffix : `.${suffix}`;
+export function findFilesBySuffixes(
+  dir: string,
+  suffixes: string[],
+  options: FindFilesBySuffixesOptions = {}
+): string[] {
+  if (suffixes.length === 0) {
+    return [];
+  }
+
+  const normalizedSuffixes = [...new Set(suffixes.map(normalizeSuffix))];
   const skipped = new Set([...DEFAULT_SKIP_DIRECTORIES, ...(options.skipDirectories ?? [])]);
+  const maxMatches = options.maxMatches ?? Number.POSITIVE_INFINITY;
+  if (maxMatches <= 0) {
+    return [];
+  }
 
-  const visit = (currentDir: string): string[] => {
-    const matches: string[] = [];
+  const matches: string[] = [];
 
+  const visit = (currentDir: string): boolean => {
     try {
       const entries = fs.readdirSync(currentDir, { withFileTypes: true });
 
       for (const entry of entries) {
+        if (matches.length >= maxMatches) {
+          return true;
+        }
+
         const fullPath = path.join(currentDir, entry.name);
 
         if (entry.isDirectory()) {
           if (skipped.has(entry.name)) {
             continue;
           }
-          matches.push(...visit(fullPath));
-        } else if (entry.isFile() && entry.name.endsWith(normalizedSuffix)) {
-          matches.push(fullPath);
+          const shouldStop = visit(fullPath);
+          if (shouldStop) {
+            return true;
+          }
+        } else if (entry.isFile()) {
+          for (const suffix of normalizedSuffixes) {
+            if (entry.name.endsWith(suffix)) {
+              matches.push(fullPath);
+              break;
+            }
+          }
         }
       }
     } catch (error) {
@@ -49,8 +82,13 @@ export function findFilesBySuffix(dir: string, suffix: string, options: FindFile
       }
     }
 
-    return matches;
+    return matches.length >= maxMatches;
   };
 
-  return visit(dir);
+  visit(dir);
+  return matches;
+}
+
+export function findFilesBySuffix(dir: string, suffix: string, options: FindFilesOptions = {}): string[] {
+  return findFilesBySuffixes(dir, [suffix], options);
 }
