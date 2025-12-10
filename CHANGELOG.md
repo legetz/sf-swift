@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- _No changes yet._
+
+## [1.0.17] - 2025-12-10
+
 ### Added
 - 🧭 **File Detector Command**: Introduced `sf swift detect file` with repeatable `--type` filters, optional `--max` limits, and JSON output so CI can block any unwanted file suffix.
 
