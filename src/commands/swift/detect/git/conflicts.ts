@@ -1,9 +1,8 @@
 import { SfCommand, Flags } from "@salesforce/sf-plugins-core";
 import { Messages } from "@salesforce/core";
 import { Args } from "@oclif/core";
-import * as path from "path";
 import { ensureDirectory } from "../../../../common/helper/filesystem.js";
-import { findFilesBySuffix } from "../../../../common/helper/file-finder.js";
+import { logFileScanSummary, scanForFiles } from "../../../../common/detect/file-detector.js";
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 const messages = Messages.loadMessages("sf-swift", "detect.git.conflicts");
@@ -43,52 +42,30 @@ export default class DetectGitConflicts extends SfCommand<ConflictResult> {
 
     this.log(`🔍 Scan GIT conflict (.rej) files in ${targetDir}`);
 
-    const conflictFiles = findFilesBySuffix(targetDir, ".rej");
-    const conflictCount = conflictFiles.length;
+    const scanResult = scanForFiles({ targetDir, types: [".rej"] });
     const elapsedTime = Date.now() - startTime;
 
-    // Output JSON result
     const result: ConflictResult = {
-      count: conflictCount,
-      conflictFiles
+      count: scanResult.count,
+      conflictFiles: scanResult.files
     };
 
-    // Display summary
-    this.displaySummary(conflictCount, conflictFiles, elapsedTime, targetDir);
+    logFileScanSummary({
+      log: this.log.bind(this),
+      result: scanResult,
+      targetDir,
+      elapsedTimeMs: elapsedTime,
+      matchLabel: "📊 Conflict files found",
+      listHeading: "❌ Conflict files detected:",
+      emptyMessage: "✅ No conflict files found - repository is clean!"
+    });
 
-    // Exit with error code if conflicts were found
-    if (conflictCount > 0 && !flags["json"]) {
-      this.error(`❌ Found ${conflictCount} Git conflict (.rej) files. Please resolve conflicts before proceeding.`, {
+    if (result.count > 0 && !flags["json"]) {
+      this.error(`❌ Found ${result.count} Git conflict (.rej) files. Please resolve conflicts before proceeding.`, {
         exit: 1
       });
     }
 
     return result;
-  }
-
-  private displaySummary(
-    conflictCount: number,
-    conflictFiles: string[],
-    elapsedTimeMs: number,
-    targetDir: string
-  ): void {
-    const elapsedSeconds = (elapsedTimeMs / 1000).toFixed(2);
-
-    this.log("\n" + "=".repeat(60));
-    this.log("🔍 SCAN SUMMARY");
-    this.log("=".repeat(60));
-    this.log(`📁 Directory scanned: ${targetDir}`);
-    this.log(`⏱️ Processing time: ${elapsedSeconds}s`);
-    this.log(`📊 Conflict files found: ${conflictCount}`);
-
-    if (conflictCount > 0) {
-      this.log("❌ Conflict files detected:");
-      conflictFiles.forEach((file, index) => {
-        const relativePath = path.relative(targetDir, file);
-        this.log(`  ${index + 1}. ${relativePath}`);
-      });
-    } else {
-      this.log(`✅ No conflict files found - repository is clean!`);
-    }
   }
 }

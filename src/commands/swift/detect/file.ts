@@ -1,9 +1,8 @@
 import { SfCommand, Flags } from "@salesforce/sf-plugins-core";
 import { Messages } from "@salesforce/core";
 import { Args } from "@oclif/core";
-import * as path from "path";
 import { ensureDirectory } from "../../../common/helper/filesystem.js";
-import { findFilesBySuffixes } from "../../../common/helper/file-finder.js";
+import { logFileScanSummary, scanForFiles } from "../../../common/detect/file-detector.js";
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 const messages = Messages.loadMessages("sf-swift", "detect.file");
@@ -59,19 +58,28 @@ export default class DetectFile extends SfCommand<FileDetectionResult> {
 
     this.log(`🔍 Scan files (${normalizedTypes.join(", ")}) in ${targetDir}`);
 
-    const files = findFilesBySuffixes(targetDir, normalizedTypes, { maxMatches });
+    const scanResult = scanForFiles({ targetDir, types: normalizedTypes, maxMatches });
     const elapsedTime = Date.now() - startTime;
 
     const result: FileDetectionResult = {
-      count: files.length,
-      files,
-      types: normalizedTypes
+      count: scanResult.count,
+      files: scanResult.files,
+      types: scanResult.types
     };
 
-    this.displaySummary(result, elapsedTime, targetDir, maxMatches);
+    logFileScanSummary({
+      log: this.log.bind(this),
+      result: scanResult,
+      targetDir,
+      elapsedTimeMs: elapsedTime,
+      matchLabel: "📊 Matching files found",
+      listHeading: "❌ Matching files detected:",
+      emptyMessage: "✅ No matching files found - directory is clean!",
+      typesLabel: "🎯 File types"
+    });
 
-    if (files.length > 0 && !flags.json) {
-      this.error(messages.getMessage("errors.matches.found", [files.length]), {
+    if (result.count > 0 && !flags.json) {
+      this.error(messages.getMessage("errors.matches.found", [result.count]), {
         exit: 1
       });
     }
@@ -89,36 +97,5 @@ export default class DetectFile extends SfCommand<FileDetectionResult> {
     }
 
     return [...new Set(trimmed.map((value) => (value.startsWith(".") ? value : `.${value}`)))];
-  }
-
-  private displaySummary(
-    result: FileDetectionResult,
-    elapsedTimeMs: number,
-    targetDir: string,
-    maxMatches?: number
-  ): void {
-    const elapsedSeconds = (elapsedTimeMs / 1000).toFixed(2);
-
-    this.log("\n" + "=".repeat(60));
-    this.log("🔍 SCAN SUMMARY");
-    this.log("=".repeat(60));
-    this.log(`📁 Directory scanned: ${targetDir}`);
-    this.log(`⏱️ Processing time: ${elapsedSeconds}s`);
-    this.log(`🎯 File types: ${result.types.join(", ")}`);
-    this.log(`📊 Matching files found: ${result.count}`);
-
-    if (result.count > 0) {
-      this.log("❌ Matching files detected:");
-      result.files.forEach((file, index) => {
-        const relativePath = path.relative(targetDir, file);
-        this.log(`  ${index + 1}. ${relativePath}`);
-      });
-    } else {
-      this.log(`✅ No matching files found - directory is clean!`);
-    }
-
-    if (maxMatches !== undefined && result.count === maxMatches) {
-      this.log(`⚠️ Scan stopped early after reaching --max=${maxMatches}`);
-    }
   }
 }
