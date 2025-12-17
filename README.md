@@ -156,6 +156,7 @@ The following metadata types are whitelisted and will be processed by default:
 
 - `cls-meta.xml` - Apex classes
 - `field-meta.xml` - Fields
+- `globalValueSet-meta.xml` - Global Value Sets
 - `labels-meta.xml` - Labels
 - `listView-meta.xml` - List views
 - `object-meta.xml` - Standard Objects

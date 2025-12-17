@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- _No changes yet._
+
+## [1.0.18] - 2025-12-17
+
 ### Fixed
 - 🧾 **Global Value Sets**: Preserve `customValue` ordering and prioritize `fullName` inside entries so boolean semantics remain intact while keeping key order consistent.
 
@@ -126,7 +130,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Features
 - **Command**: `sf swift metadata adjust` - Main command for sorting metadata files
 
-[Unreleased]: https://github.com/legetz/sf-swift/compare/v1.0.15...HEAD
+[Unreleased]: https://github.com/legetz/sf-swift/compare/v1.0.18...HEAD
+[1.0.18]: https://github.com/legetz/sf-swift/releases/tag/v1.0.18
 [1.0.15]: https://github.com/legetz/sf-swift/releases/tag/v1.0.15
 [1.0.14]: https://github.com/legetz/sf-swift/releases/tag/v1.0.14
 [1.0.13]: https://github.com/legetz/sf-swift/releases/tag/v1.0.13
