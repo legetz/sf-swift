@@ -255,6 +255,32 @@ describe("common/xml/sorter", () => {
       expect(result.filters[1].value[0]).to.equal("LAST_N_DAYS:30");
       expect(result.booleanFilter[0]).to.equal("1 OR 2");
     });
+
+    it("should preserve customValue ordering and prioritize fullName in global value sets", () => {
+      const filePath = "globalValueSets/OwnerType.globalValueSet-meta.xml";
+      const input = {
+        customValue: [
+          {
+            label: ["User"],
+            default: ["true"],
+            fullName: ["User"]
+          },
+          {
+            label: ["Queue"],
+            default: ["false"],
+            fullName: ["Queue"]
+          }
+        ]
+      };
+
+      const result = sortXmlElements(input, undefined, filePath);
+
+      expect(result.customValue).to.have.lengthOf(2);
+      expect(result.customValue[0].fullName[0]).to.equal("User");
+      expect(result.customValue[1].fullName[0]).to.equal("Queue");
+      expect(Object.keys(result.customValue[0])[0]).to.equal("fullName");
+      expect(Object.keys(result.customValue[1])[0]).to.equal("fullName");
+    });
   });
 
   describe("Case-sensitive sorting validation", () => {

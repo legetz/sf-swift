@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GlobalValueSet xmlns="http://soap.sforce.com/2006/04/metadata">
+    <customValue>
+        <fullName>User</fullName>
+        <default>true</default>
+        <label>User</label>
+    </customValue>
+    <customValue>
+        <fullName>Queue</fullName>
+        <default>false</default>
+        <label>Queue</label>
+    </customValue>
+    <description>Owner types</description>
+    <masterLabel>Owner Type</masterLabel>
+    <sorted>false</sorted>
+</GlobalValueSet>

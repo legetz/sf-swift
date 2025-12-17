@@ -7,7 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- _No changes yet._
+### Fixed
+- 🧾 **Global Value Sets**: Preserve `customValue` ordering and prioritize `fullName` inside entries so boolean semantics remain intact while keeping key order consistent.
 
 ## [1.0.17] - 2025-12-10
 
