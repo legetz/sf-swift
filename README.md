@@ -1,19 +1,6 @@
 # SF Swift ⚡
 
-A fast and powerful Salesforce CLI plugin with utilities for metadata formatting, sorting, and more
-
-- 🎯 **Smart Salesforce Metadata Sorting** - Understands PermissionSet, Profile, and other metadata structures
-- 💾 **Automatic Backups** - Creates timestamped backups before processing (opt-in)
-- 📊 **Detailed Reporting** - Shows which files were modified vs already okay
-- 🔄 **Recursive Processing** - Handles nested directory structures
-- 🔍 **Git Integration** - Process only files changed in recent commits
-- 🛡️ **Safety Whitelist** - Only processes safe metadata types by default (can be bypassed with `--all`)
-- ⏭️ **Exclude Filter** - Skip specific metadata types (e.g., `--exclude field,object`) (defaults: reportType, flexipage, layout)
-- 🎯 **Include Filter** - Target only specific metadata types (e.g., `--include permissionset,profile`)
-- ✅ **Error Handling** - Continues processing even if individual files fail
-- 🧹 **Clean Formatting** - Consistent indentation and XML formatting
-- ⚡ **Performance Optimization** - Skips files that are already properly sorted
-- ⏱️ **Execution Timer** - Shows how long processing took overall
+A fast and powerful Salesforce CLI plugin with utilities for metadata formatting, sorting, integrity checks and more 🎯
 
 ## Commands
 
@@ -36,7 +23,18 @@ sf plugins install sf-swift
 
 ## Command: `sf swift metadata adjust`
 
-Sorts and normalizes Salesforce metadata XML files with type-aware rules, entity preservation, and optional git-delta processing.
+Sorts and normalizes Salesforce metadata XML files with type-aware rules, entity preservation, and optional CI/CD optimized efficiency. ⚡
+
+- 🎯 **Smart Metadata Sorting** - Understands PermissionSet, Profile, and other metadata structures
+- 💾 **Automatic Backups** - Creates timestamped backups before processing (opt-in)
+- 📊 **Detailed Reporting** - Shows which files were modified vs already okay
+- 🔄 **Recursive Processing** - Handles nested directory structures
+- 🔍 **CI/CD optimization** - Process only files changed in recent commits
+- 🛡️ **Safety Whitelist** - Only processes safe metadata types by default (can be bypassed with `--all`)
+- ⏭️ **Exclude Filter** - Skip specific metadata types (e.g., `--exclude field,object`)
+- 🎯 **Include Filter** - Target only specific metadata types (e.g., `--include permissionset,profile`)
+- 🧹 **Clean Formatting** - Consistent indentation and XML formatting
+- ⏱️ **Execution Timer** - Shows how long processing took overall
 
 ### Quick start
 
