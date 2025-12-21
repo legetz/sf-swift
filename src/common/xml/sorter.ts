@@ -24,14 +24,22 @@ export function sortClassAccesses(classAccesses: any[]): any[] {
 
 /**
  * Sort other array elements by their first key or content (case-sensitive)
+ * @param arr - Array to sort
+ * @param arrayKey - The parent key name of the array
+ * @param prioritySortKey - Optional key to use for sorting (from priorityKeys config)
  */
-export function sortArrayElements(arr: any[], arrayKey: string): any[] {
+export function sortArrayElements(arr: any[], arrayKey: string, prioritySortKey?: string): any[] {
   return arr.sort((a, b) => {
     let valueA = "";
     let valueB = "";
 
+    // If a priority sort key is specified, use it first
+    if (prioritySortKey && a[prioritySortKey] !== undefined) {
+      valueA = a[prioritySortKey]?.[0] || "";
+      valueB = b[prioritySortKey]?.[0] || "";
+    }
     // For fieldPermissions, sort by field name
-    if (arrayKey === "fieldPermissions") {
+    else if (arrayKey === "fieldPermissions") {
       valueA = a.field?.[0] || "";
       valueB = b.field?.[0] || "";
     } else if (arrayKey === "packageVersions") {
@@ -112,7 +120,9 @@ export function sortXmlElements(obj: any, parentKey?: string, filePath?: string,
 
     // Handle other arrays with appropriate sorting
     if (parentKey && obj.length > 0 && typeof obj[0] === "object") {
-      const sorted = sortArrayElements(obj, parentKey);
+      // Use first priorityKey as the sorting key for arrays
+      const prioritySortKey = sortingRule?.priorityKeys?.[0];
+      const sorted = sortArrayElements(obj, parentKey, prioritySortKey);
       return sorted.map((item) => sortXmlElements(item, undefined, filePath, obj));
     }
 

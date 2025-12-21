@@ -9,12 +9,14 @@ export interface SortingRule {
   priorityKeys?: string[];
   /** Array keys that should NOT be sorted (preserve original order) */
   unsortedArrays?: string[];
+  /** Array keys that should be condensed to single-line format for better diff readability */
+  condensedArrays?: string[];
 }
 
 /**
  * Default sorting rules for Salesforce metadata files
  */
-export const DEFAULT_SORTING_RULES: SortingRule[] = [
+export const DEFAULT_SORTING_RULES: SortingRule[] = Object.freeze([
   {
     filePattern: "field-meta.xml",
     priorityKeys: ["fullName"]
@@ -40,8 +42,42 @@ export const DEFAULT_SORTING_RULES: SortingRule[] = [
     filePattern: "globalValueSet-meta.xml",
     priorityKeys: ["fullName"],
     unsortedArrays: ["customValue"]
+  },
+  {
+    filePattern: "permissionset-meta.xml",
+    condensedArrays: ["fieldPermissions", "objectPermissions"]
+  },
+  {
+    filePattern: "profile-meta.xml",
+    condensedArrays: ["fieldPermissions", "objectPermissions"]
   }
-];
+]) as SortingRule[];
+
+/**
+ * Active sorting rules (can be overridden via config)
+ */
+let activeSortingRules: SortingRule[] = [...DEFAULT_SORTING_RULES];
+
+/**
+ * Set active sorting rules (called when loading config)
+ */
+export function setSortingRules(rules: SortingRule[]): void {
+  activeSortingRules = rules;
+}
+
+/**
+ * Reset sorting rules to defaults
+ */
+export function resetSortingRules(): void {
+  activeSortingRules = [...DEFAULT_SORTING_RULES];
+}
+
+/**
+ * Get currently active sorting rules
+ */
+export function getActiveSortingRules(): SortingRule[] {
+  return activeSortingRules;
+}
 
 /**
  * Get sorting rule for a given file path
@@ -51,7 +87,7 @@ export function getSortingRule(filePath?: string): SortingRule | undefined {
     return undefined;
   }
 
-  return DEFAULT_SORTING_RULES.find((rule) => filePath.endsWith(rule.filePattern));
+  return activeSortingRules.find((rule) => filePath.endsWith(rule.filePattern));
 }
 
 /**

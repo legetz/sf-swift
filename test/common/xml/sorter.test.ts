@@ -359,5 +359,26 @@ describe("common/xml/sorter", () => {
       expect(keys[3]).to.equal("label");
       expect(keys[4]).to.equal("type");
     });
+
+    it("should sort arrays by priorityKey value", () => {
+      const input = {
+        labels: [
+          { fullName: ["Zebra"], shortDescription: ["Zebra Label"], value: ["Z"] },
+          { fullName: ["Apple"], shortDescription: ["Apple Label"], value: ["A"] },
+          { fullName: ["Banana"], shortDescription: ["Banana Label"], value: ["B"] }
+        ]
+      };
+
+      // labels-meta.xml has priorityKeys: ["fullName"]
+      const result = sortXmlElements(input, undefined, "CustomLabels.labels-meta.xml");
+
+      // Labels should be sorted by fullName (the priorityKey)
+      expect(result.labels[0].fullName[0]).to.equal("Apple");
+      expect(result.labels[1].fullName[0]).to.equal("Banana");
+      expect(result.labels[2].fullName[0]).to.equal("Zebra");
+
+      // And fullName should be first key in each label
+      expect(Object.keys(result.labels[0])[0]).to.equal("fullName");
+    });
   });
 });

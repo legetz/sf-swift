@@ -2,6 +2,7 @@ import * as path from "path";
 import * as fs from "fs";
 import { execSync } from "child_process";
 import { SfMetadataAdjuster } from "../../../sf-metadata-adjuster.js";
+import { getConfig } from "../../../common/config/swiftrc-config.js";
 import { SfCommand, Flags } from "@salesforce/sf-plugins-core";
 import { Messages } from "@salesforce/core";
 import { Args } from "@oclif/core";
@@ -137,10 +138,14 @@ export default class MetadataAdjust extends SfCommand<void> {
     }
 
     try {
+      // Load configuration from .swiftrc or use defaults
+      const config = getConfig(targetDir);
+
       const adjuster = new SfMetadataAdjuster(targetDir, {
         includeTypes,
         excludeTypes,
-        allowAll: flags.all
+        allowAll: flags.all,
+        config
       });
 
       // If git-depth is specified, set specific files to process

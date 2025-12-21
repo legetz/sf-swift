@@ -3,6 +3,7 @@
  */
 
 import * as xml2js from "xml2js";
+import { getSortingRule } from "./sorting-rules.js";
 
 export interface XmlObject {
   [key: string]: any;
@@ -67,9 +68,36 @@ export async function parseMetadataXml(xmlString: string): Promise<XmlObject> {
 }
 
 /**
- * Build XML output for metadata objects using the original structure as reference
+ * Condense specified array elements to single-line format for better diff readability
+ * Converts multi-line element blocks to single-line format
+ * @param xmlString - The XML string to process
+ * @param elementName - The element name to condense
  */
-export function buildMetadataXml(obj: XmlObject, originalXml: string): string {
+export function condenseElement(xmlString: string, elementName: string): string {
+  // Match the element with its content, including newlines
+  // Pattern: opening tag, content (with newlines), closing tag
+  const pattern = new RegExp(
+    `(<${elementName}>)([\\s\\S]*?)(<\\/${elementName}>)`,
+    "g"
+  );
+
+  return xmlString.replace(pattern, (match, openTag, content, closeTag) => {
+    // Remove leading/trailing whitespace and collapse internal whitespace
+    const condensedContent = content
+      .replace(/>\s+</g, "><") // Remove whitespace between tags
+      .replace(/^\s+|\s+$/g, ""); // Trim leading/trailing whitespace
+
+    return `${openTag}${condensedContent}${closeTag}`;
+  });
+}
+
+/**
+ * Build XML output for metadata objects using the original structure as reference
+ * @param obj - The XML object to build
+ * @param originalXml - The original XML string for reference
+ * @param filePath - Optional file path for applying condensed format rules
+ */
+export function buildMetadataXml(obj: XmlObject, originalXml: string, filePath?: string): string {
   let rootName = extractRootElementName(originalXml);
 
   if (rootName === "root") {
@@ -100,6 +128,16 @@ export function buildMetadataXml(obj: XmlObject, originalXml: string): string {
   let xmlOutput = builder.buildObject(obj);
   xmlOutput = restoreXmlEntities(xmlOutput);
   xmlOutput = xmlOutput.replace(/<(\w+)([^>]*)\/>/g, "<$1$2></$1>");
+
+  // Apply condensed format for specified arrays
+  if (filePath) {
+    const sortingRule = getSortingRule(filePath);
+    if (sortingRule?.condensedArrays) {
+      for (const elementName of sortingRule.condensedArrays) {
+        xmlOutput = condenseElement(xmlOutput, elementName);
+      }
+    }
+  }
 
   if (!xmlOutput.endsWith("\n")) {
     xmlOutput += "\n";

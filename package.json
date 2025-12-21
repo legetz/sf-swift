@@ -55,6 +55,7 @@
     "@types/chai": "^5.2.3",
     "@types/mocha": "^10.0.10",
     "@types/node": "^24.9.1",
+    "@types/js-yaml": "^4.0.9",
     "@types/xml2js": "^0.4.14",
     "chai": "^6.2.0",
     "mocha": "^11.7.4",
@@ -69,6 +70,7 @@
     "@salesforce/core": "^8.23.3",
     "@salesforce/kit": "^3.2.4",
     "@salesforce/sf-plugins-core": "^12.2.5",
+    "js-yaml": "^4.1.0",
     "xml2js": "^0.6.2"
   }
 }
