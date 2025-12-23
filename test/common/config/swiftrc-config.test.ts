@@ -155,9 +155,7 @@ describe("common/config/swiftrc-config", () => {
 
     it("should accept condensedElements in formatting rules", () => {
       const result = validateConfig({
-        formatting: [
-          { filePattern: "permissionset-meta.xml", condensedElements: ["fieldPermissions"] }
-        ]
+        formatting: [{ filePattern: "permissionset-meta.xml", condensedElements: ["fieldPermissions"] }]
       });
 
       expect(result.formatting[0].condensedElements).to.deep.equal(["fieldPermissions"]);
@@ -306,10 +304,11 @@ formatting:
   });
 
   describe("getConfig", () => {
-    it("should auto-create config when no config exists", () => {
+    it("should use defaults when no config exists (without creating file)", () => {
       const result = getConfig(tempDir, { silent: true });
 
-      expect(fs.existsSync(path.join(tempDir, ".swiftrc"))).to.be.true;
+      // File should NOT be created
+      expect(fs.existsSync(path.join(tempDir, ".swiftrc"))).to.be.false;
       expect(result).to.have.property("formatting");
     });
 
@@ -344,12 +343,35 @@ formatting:
       expect(result.formatting[0].filePattern).to.equal("nested-meta.xml");
     });
 
-    it("should return defaults when auto-creating config", () => {
+    it("should return defaults when no config exists", () => {
       const defaults = getDefaultConfig();
       const result = getConfig(tempDir, { silent: true });
 
+      // File should NOT be created
+      expect(fs.existsSync(path.join(tempDir, ".swiftrc"))).to.be.false;
       expect(result.formatting).to.deep.equal(defaults.formatting);
       expect(result.alwaysExcluded).to.deep.equal(defaults.alwaysExcluded);
+    });
+
+    it("should load config from configPath when specified", () => {
+      const customConfigPath = path.join(tempDir, "custom-config.yaml");
+      const configContent = `
+formatting:
+  - filePattern: "custom-meta.xml"
+    elementPriority:
+      - fullName
+`;
+      fs.writeFileSync(customConfigPath, configContent);
+
+      const result = getConfig(tempDir, { configPath: customConfigPath });
+
+      expect(result.formatting).to.have.length(1);
+      expect(result.formatting[0].filePattern).to.equal("custom-meta.xml");
+    });
+
+    it("should throw when configPath file does not exist", () => {
+      const nonExistentPath = path.join(tempDir, "non-existent.yaml");
+      expect(() => getConfig(tempDir, { configPath: nonExistentPath })).to.throw(/Configuration file not found/);
     });
   });
 });

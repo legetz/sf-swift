@@ -26,6 +26,10 @@ export default class MetadataAdjust extends SfCommand<void> {
       char: "d",
       description: messages.getMessage("flags.targetDir.description")
     }),
+    config: Flags.string({
+      char: "c",
+      description: messages.getMessage("flags.config.description")
+    }),
     backup: Flags.boolean({
       description: messages.getMessage("flags.backup.description"),
       default: false
@@ -138,8 +142,8 @@ export default class MetadataAdjust extends SfCommand<void> {
     }
 
     try {
-      // Load configuration from .swiftrc or use defaults
-      const config = getConfig(targetDir);
+      // Load configuration from --config flag, .swiftrc, or use defaults
+      const config = getConfig(targetDir, { configPath: flags.config });
 
       const adjuster = new SfMetadataAdjuster(targetDir, {
         includeTypes,

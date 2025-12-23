@@ -63,13 +63,11 @@ export const DEFAULT_FORMATTING_RULES: FormattingRule[] = Object.freeze([
   },
   {
     filePattern: "permissionset-meta.xml",
-    elementPriority: ["label", "description", "editable", "readable"],
-    condensedElements: ["fieldPermissions", "objectPermissions"]
+    elementPriority: ["label", "description", "editable", "readable"]
   },
   {
     filePattern: "profile-meta.xml",
-    elementPriority: ["editable", "readable"],
-    condensedElements: ["fieldPermissions", "objectPermissions"]
+    elementPriority: ["editable", "readable"]
   },
   // Additional types that are allowed for processing (no special formatting rules)
   { filePattern: "cls-meta.xml" },
@@ -104,16 +102,13 @@ export const DEFAULT_ARRAY_SORT_KEYS: ArraySortConfig[] = Object.freeze([
   { arrayName: "states", sortKeys: ["isoCode"] },
 
   // Generic fallbacks for common patterns
-  { arrayName: "columns", sortKeys: ["_"] }, // _ is the text content key
+  { arrayName: "columns", sortKeys: ["_"] } // _ is the text content key
 ]) as ArraySortConfig[];
 
 /**
  * Default arrays that should never be sorted (order has semantic meaning)
  */
-export const DEFAULT_GLOBAL_UNSORTED_ARRAYS: string[] = Object.freeze([
-  "filterItems",
-  "valueSettings"
-]) as string[];
+export const DEFAULT_GLOBAL_UNSORTED_ARRAYS: string[] = Object.freeze(["filterItems", "valueSettings"]) as string[];
 
 /**
  * Active formatting rules (can be overridden via config)

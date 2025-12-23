@@ -146,7 +146,9 @@ describe("common/xml/xml-helpers", () => {
       const rebuilt = buildMetadataXml(parsed, original, "Test.permissionset-meta.xml");
 
       // Verify condensed format - fieldPermissions should be on a single line
-      expect(rebuilt).to.contain("<fieldPermissions><editable>true</editable><field>Account.Name</field><readable>true</readable></fieldPermissions>");
+      expect(rebuilt).to.contain(
+        "<fieldPermissions><editable>true</editable><field>Account.Name</field><readable>true</readable></fieldPermissions>"
+      );
       // Label should still be on its own line
       expect(rebuilt).to.contain("    <label>Test Permission Set</label>");
 
@@ -186,7 +188,9 @@ describe("common/xml/xml-helpers", () => {
 
       const result = condenseElement(input, "fieldPermissions");
 
-      expect(result).to.contain("<fieldPermissions><editable>true</editable><field>Account.Name</field><readable>true</readable></fieldPermissions>");
+      expect(result).to.contain(
+        "<fieldPermissions><editable>true</editable><field>Account.Name</field><readable>true</readable></fieldPermissions>"
+      );
     });
 
     it("should condense multiple elements of the same type", () => {
@@ -203,8 +207,12 @@ describe("common/xml/xml-helpers", () => {
 
       const result = condenseElement(input, "fieldPermissions");
 
-      expect(result).to.contain("<fieldPermissions><editable>true</editable><field>Account.Name</field></fieldPermissions>");
-      expect(result).to.contain("<fieldPermissions><editable>false</editable><field>Account.Description</field></fieldPermissions>");
+      expect(result).to.contain(
+        "<fieldPermissions><editable>true</editable><field>Account.Name</field></fieldPermissions>"
+      );
+      expect(result).to.contain(
+        "<fieldPermissions><editable>false</editable><field>Account.Description</field></fieldPermissions>"
+      );
     });
 
     it("should leave non-matching elements unchanged", () => {
@@ -233,7 +241,9 @@ describe("common/xml/xml-helpers", () => {
 
       const result = condenseElement(input, "objectPermissions");
 
-      expect(result).to.contain("<objectPermissions><allowCreate>false</allowCreate><allowDelete>false</allowDelete><allowEdit>true</allowEdit><allowRead>true</allowRead><modifyAllRecords>false</modifyAllRecords><object>Allocation_Authorization__c</object><viewAllRecords>false</viewAllRecords></objectPermissions>");
+      expect(result).to.contain(
+        "<objectPermissions><allowCreate>false</allowCreate><allowDelete>false</allowDelete><allowEdit>true</allowEdit><allowRead>true</allowRead><modifyAllRecords>false</modifyAllRecords><object>Allocation_Authorization__c</object><viewAllRecords>false</viewAllRecords></objectPermissions>"
+      );
     });
   });
 });

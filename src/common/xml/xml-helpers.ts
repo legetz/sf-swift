@@ -76,10 +76,7 @@ export async function parseMetadataXml(xmlString: string): Promise<XmlObject> {
 export function condenseElement(xmlString: string, elementName: string): string {
   // Match the element with its content, including newlines
   // Pattern: opening tag, content (with newlines), closing tag
-  const pattern = new RegExp(
-    `(<${elementName}>)([\\s\\S]*?)(<\\/${elementName}>)`,
-    "g"
-  );
+  const pattern = new RegExp(`(<${elementName}>)([\\s\\S]*?)(<\\/${elementName}>)`, "g");
 
   return xmlString.replace(pattern, (match, openTag, content, closeTag) => {
     // Remove leading/trailing whitespace and collapse internal whitespace

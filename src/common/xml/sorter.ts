@@ -2,12 +2,7 @@
  * XML Sorting utilities for Salesforce metadata files
  */
 
-import {
-  getFormattingRule,
-  sortKeysWithPriority,
-  getArraySortConfig,
-  isGlobalUnsortedArray
-} from "./sorting-rules.js";
+import { getFormattingRule, sortKeysWithPriority, getArraySortConfig, isGlobalUnsortedArray } from "./sorting-rules.js";
 
 interface XmlObject {
   [key: string]: any;

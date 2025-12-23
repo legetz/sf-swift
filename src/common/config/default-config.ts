@@ -10,9 +10,9 @@ import { ElementCleanupRule } from "../metadata/metadata-rules.js";
  * Complete .swiftrc configuration structure
  */
 export interface SwiftrcConfig {
-    formatting: FormattingRule[];
-    cleanup: { [metadataType: string]: ElementCleanupRule[] };
-    alwaysExcluded: string[];
+  formatting: FormattingRule[];
+  cleanup: { [metadataType: string]: ElementCleanupRule[] };
+  alwaysExcluded: string[];
 }
 
 /**
@@ -24,31 +24,31 @@ export const DEFAULT_ALWAYS_EXCLUDED: string[] = ["flow-meta.xml"];
  * Default element cleanup rules for metadata
  */
 export const DEFAULT_CLEANUP_RULES: { [metadataType: string]: ElementCleanupRule[] } = {
-    "field-meta.xml": [
+  "field-meta.xml": [
+    {
+      elementName: "externalId",
+      removeValues: ["false"],
+      conditions: [
         {
-            elementName: "externalId",
-            removeValues: ["false"],
-            conditions: [
-                {
-                    elementName: "type",
-                    values: ["Picklist"]
-                }
-            ]
-        },
-        {
-            elementName: "description",
-            removeValues: [""]
+          elementName: "type",
+          values: ["Picklist"]
         }
-    ]
+      ]
+    },
+    {
+      elementName: "description",
+      removeValues: [""]
+    }
+  ]
 };
 
 /**
  * Get the complete default configuration
  */
 export function getDefaultConfig(): SwiftrcConfig {
-    return {
-        formatting: [...DEFAULT_FORMATTING_RULES],
-        cleanup: JSON.parse(JSON.stringify(DEFAULT_CLEANUP_RULES)),
-        alwaysExcluded: [...DEFAULT_ALWAYS_EXCLUDED]
-    };
+  return {
+    formatting: [...DEFAULT_FORMATTING_RULES],
+    cleanup: JSON.parse(JSON.stringify(DEFAULT_CLEANUP_RULES)),
+    alwaysExcluded: [...DEFAULT_ALWAYS_EXCLUDED]
+  };
 }

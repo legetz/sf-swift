@@ -17,6 +17,8 @@ export { getDefaultConfig, SwiftrcConfig } from "./default-config.js";
  */
 export interface GetConfigOptions {
   silent?: boolean;
+  /** Path to custom configuration file. If provided, this file is used instead of .swiftrc */
+  configPath?: string;
 }
 
 const CONFIG_FILENAME = ".swiftrc";
@@ -57,9 +59,7 @@ function validateNoPatternConflicts(formatting: FormattingRule[], alwaysExcluded
   for (const rule of formatting) {
     for (const excluded of alwaysExcluded) {
       // Check for exact match or suffix match
-      if (rule.filePattern === excluded ||
-          rule.filePattern.endsWith(excluded) ||
-          excluded.endsWith(rule.filePattern)) {
+      if (rule.filePattern === excluded || rule.filePattern.endsWith(excluded) || excluded.endsWith(rule.filePattern)) {
         conflicts.push(rule.filePattern);
       }
     }
@@ -68,7 +68,7 @@ function validateNoPatternConflicts(formatting: FormattingRule[], alwaysExcluded
   if (conflicts.length > 0) {
     throw new Error(
       `.swiftrc: Configuration conflict - the following formatting patterns are also in alwaysExcluded: ${conflicts.join(", ")}. ` +
-      `Remove them from either 'formatting' or 'alwaysExcluded'.`
+        `Remove them from either 'formatting' or 'alwaysExcluded'.`
     );
   }
 }
@@ -289,7 +289,7 @@ export function writeDefaultConfig(projectRoot: string): string {
 }
 
 /**
- * Load .swiftrc config from specified path
+ * Load .swiftrc config from specified directory (looks for .swiftrc file)
  */
 export function loadSwiftrcConfig(projectRoot: string): SwiftrcConfig | null {
   const configPath = path.join(projectRoot, CONFIG_FILENAME);
@@ -311,13 +311,42 @@ export function loadSwiftrcConfig(projectRoot: string): SwiftrcConfig | null {
 }
 
 /**
+ * Load config from a specific file path
+ */
+export function loadConfigFromPath(configFilePath: string): SwiftrcConfig {
+  const resolvedPath = path.resolve(configFilePath);
+
+  if (!fs.existsSync(resolvedPath)) {
+    throw new Error(`Configuration file not found: ${resolvedPath}`);
+  }
+
+  try {
+    const content = fs.readFileSync(resolvedPath, "utf8");
+    const rawConfig = yaml.load(content);
+    return validateConfig(rawConfig);
+  } catch (error) {
+    if (error instanceof yaml.YAMLException) {
+      throw new Error(`${configFilePath}: Invalid YAML syntax - ${(error as yaml.YAMLException).message}`);
+    }
+    throw error;
+  }
+}
+
+/**
  * Main entry point - get configuration for a target directory
- * Finds project root, loads config if exists, or auto-creates with defaults
+ * - If configPath option is provided, loads from that specific file
+ * - Otherwise, looks for .swiftrc in project root
+ * - Falls back to built-in defaults if no config file is found
  * Note: Config is used as-is, no merging with defaults
  */
 export function getConfig(targetDir: string, options: GetConfigOptions = {}): SwiftrcConfig {
+  // If a specific config path is provided, load from that file
+  if (options.configPath) {
+    return loadConfigFromPath(options.configPath);
+  }
+
+  // Find project root and look for .swiftrc
   const projectRoot = findProjectRoot(targetDir);
-  const configPath = path.join(projectRoot, CONFIG_FILENAME);
 
   // Try to load existing config
   const existingConfig = loadSwiftrcConfig(projectRoot);
@@ -327,12 +356,6 @@ export function getConfig(targetDir: string, options: GetConfigOptions = {}): Sw
     return existingConfig;
   }
 
-  // No config exists - create one with defaults
-  writeDefaultConfig(projectRoot);
-  if (!options.silent) {
-    console.log(`Created ${CONFIG_FILENAME} configuration file at: ${configPath}`);
-  }
-
-  // Return the defaults
+  // No config exists - use built-in defaults (no file creation)
   return getDefaultConfig();
 }

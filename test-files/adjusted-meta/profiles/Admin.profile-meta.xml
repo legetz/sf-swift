@@ -13,7 +13,15 @@
         <enabled>true</enabled>
     </classAccesses>
     <custom>false</custom>
-    <fieldPermissions><editable>true</editable><readable>true</readable><field>Account.AccountNumber</field></fieldPermissions>
-    <fieldPermissions><editable>true</editable><readable>true</readable><field>Account.Website</field></fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <readable>true</readable>
+        <field>Account.AccountNumber</field>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <readable>true</readable>
+        <field>Account.Website</field>
+    </fieldPermissions>
     <userLicense>Salesforce</userLicense>
 </Profile>

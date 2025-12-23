@@ -7,6 +7,7 @@ This document provides a complete reference for the `.swiftrc` configuration fil
 - [Configuration Reference](#configuration-reference)
   - [Table of Contents](#table-of-contents)
   - [Overview](#overview)
+  - [Getting Started](#getting-started)
   - [Configuration Structure](#configuration-structure)
   - [Formatting Options](#formatting-options)
     - [elementPriority](#elementpriority)
@@ -37,9 +38,81 @@ This document provides a complete reference for the `.swiftrc` configuration fil
 The `.swiftrc` file is a YAML configuration file placed in your project root. It controls how SF Swift formats and processes Salesforce metadata XML files.
 
 **Key behaviors:**
-- **Auto-creation**: If no `.swiftrc` exists, one is created with defaults on first run
+- **Built-in defaults**: If no `.swiftrc` exists, the tool uses built-in defaults (no file is created)
+- **Custom config path**: Use `--config path/to/file.yaml` to specify a custom configuration file
 - **Implicit whitelist**: Only files matching a `formatting[].filePattern` are processed
 - **No merging**: Your configuration is used exactly as-is (no merging with defaults)
+
+## Getting Started
+
+To customize the configuration, create a `.swiftrc` file in your project root. Copy this sample configuration:
+
+```yaml
+# .swiftrc - SF Swift Configuration File
+# Copy this file to your project root to customize formatting rules.
+
+formatting:
+  - filePattern: "field-meta.xml"
+    elementPriority:
+      - fullName
+  - filePattern: "permissionset-meta.xml"
+    elementPriority:
+      - label
+      - description
+      - editable
+      - readable
+  - filePattern: "profile-meta.xml"
+    elementPriority:
+      - editable
+      - readable
+  - filePattern: "listView-meta.xml"
+    elementPriority:
+      - fullName
+    unsortedArrays:
+      - filters
+  - filePattern: "validationRule-meta.xml"
+    elementPriority:
+      - fullName
+  - filePattern: "labels-meta.xml"
+    elementPriority:
+      - fullName
+  - filePattern: "globalValueSet-meta.xml"
+    elementPriority:
+      - fullName
+    unsortedArrays:
+      - customValue
+  - filePattern: "cls-meta.xml"
+  - filePattern: "object-meta.xml"
+  - filePattern: "settings-meta.xml"
+  - filePattern: "trigger-meta.xml"
+  - filePattern: "FileUploadAndDownloadSecurity.settings-meta.xml"
+    unsortedArrays:
+      - dispositions
+
+# Optional: cleanup rules for removing default/empty values
+cleanup:
+  field-meta.xml:
+    - elementName: externalId
+      removeValues:
+        - "false"
+      conditions:
+        - elementName: type
+          values:
+            - Picklist
+    - elementName: description
+      removeValues:
+        - ""
+
+# Files that are never processed
+alwaysExcluded:
+  - flow-meta.xml
+```
+
+You can also use a custom configuration file with the `--config` flag:
+
+```bash
+sf swift metadata adjust --config ./my-custom-config.yaml
+```
 
 ## Configuration Structure
 
@@ -378,7 +451,7 @@ alwaysExcluded:
 
 ## Tips
 
-1. **Start with defaults**: Run the command once to auto-generate `.swiftrc` with defaults, then customize as needed.
+1. **Copy the sample config**: Copy the sample configuration from the [Getting Started](#getting-started) section to your project root as `.swiftrc`, then customize as needed.
 
 2. **Add new file types**: To process additional metadata types, add a formatting rule even if no special options are needed:
    ```yaml
@@ -386,6 +459,11 @@ alwaysExcluded:
      - filePattern: "customMetadata-meta.xml"
    ```
 
-3. **Test changes carefully**: Use `--backup` flag when experimenting with new configuration to preserve originals.
+3. **Use custom config path**: Use `--config` flag to use a configuration file from a different location:
+   ```bash
+   sf swift metadata adjust --config ./configs/my-rules.yaml
+   ```
 
-4. **Check git diffs**: After adjusting files, review the git diff to ensure the formatting meets your expectations.
+4. **Test changes carefully**: Use `--backup` flag when experimenting with new configuration to preserve originals.
+
+5. **Check git diffs**: After adjusting files, review the git diff to ensure the formatting meets your expectations.

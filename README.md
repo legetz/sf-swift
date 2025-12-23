@@ -109,6 +109,7 @@ sf swift metadata adjust --help
 | Flag | Short | Description | Default |
 |------|-------|-------------|---------|
 | `--target-dir` | `-d` | Target directory to process | `.` (current) |
+| `--config` | `-c` | Path to custom config file | `.swiftrc` or built-in |
 | `--git-depth` | `-g` | Process only N commits | `0` (all files) |
 | `--include` | `-i` | Only process specific types | All whitelisted types |
 | `--exclude` | `-e` | Exclude specific types | `reportType,flexipage,layout` |
@@ -233,9 +234,13 @@ sf swift metadata adjust --all --backup
 
 The adjust command supports a YAML configuration file (`.swiftrc`) in your project root. This allows you to customize formatting rules, cleanup rules, and exclusions without command-line flags.
 
-#### Auto-creation
+#### Default behavior
 
-If no `.swiftrc` file exists, one is automatically created with default settings on first run.
+- If no `.swiftrc` file exists, the tool uses **built-in defaults**
+- If a `.swiftrc` file is found in your project root, it is loaded and used
+- Use `--config path/to/file.yaml` to specify a custom configuration file
+
+To customize the configuration, copy the sample config below to `.swiftrc` in your project root.
 
 #### Configuration structure
 
@@ -254,9 +259,15 @@ formatting:
     unsortedArrays:
       - filters
   - filePattern: "permissionset-meta.xml"
-    condensedElements:
-      - fieldPermissions
-      - objectPermissions
+    elementPriority:
+      - label
+      - description
+      - editable
+      - readable
+  - filePattern: "profile-meta.xml"
+    elementPriority:
+      - editable
+      - readable
 
 # Element cleanup rules for removing default/empty values
 cleanup:
