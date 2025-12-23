@@ -3,6 +3,7 @@ import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
 import { SfMetadataAdjuster } from "../../../src/sf-metadata-adjuster.js";
+import { getDefaultConfig } from "../../../src/common/config/swiftrc-config.js";
 
 function copyDirectory(source: string, destination: string): void {
   fs.mkdirSync(destination, { recursive: true });
@@ -58,7 +59,7 @@ describe("metadata-adjust", () => {
     tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "metadata-adjust-"));
     copyDirectory(originalRoot, tempRoot);
 
-    const adjuster = new SfMetadataAdjuster(tempRoot, { silent: true });
+    const adjuster = new SfMetadataAdjuster(tempRoot, { silent: true, config: getDefaultConfig() });
     await adjuster.process(false);
 
     const expectedFiles = collectMetadataFiles(expectedRoot)

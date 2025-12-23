@@ -3,33 +3,6 @@
  */
 
 /**
- * Whitelist of allowed metadata file types for safe processing
- * Only these types will be processed unless --all flag is used
- */
-export const ALLOWED_METADATA_TYPES: readonly string[] = Object.freeze([
-  "cls-meta.xml",
-  "field-meta.xml",
-  "labels-meta.xml",
-  "globalValueSet-meta.xml",
-  "listView-meta.xml",
-  "object-meta.xml",
-  "permissionset-meta.xml",
-  "profile-meta.xml",
-  "settings-meta.xml",
-  "trigger-meta.xml",
-  "validationRule-meta.xml"
-]);
-
-/**
- * Default exclusions (used when --exclude is not specified)
- */
-export const DEFAULT_EXCLUSIONS: readonly string[] = Object.freeze([
-  "reportType-meta.xml",
-  "flexipage-meta.xml",
-  "layout-meta.xml"
-]);
-
-/**
  * Always excluded types that cannot be included (due to special handling requirements)
  */
 export const ALWAYS_EXCLUDED: readonly string[] = Object.freeze(["flow-meta.xml"]);
@@ -74,8 +47,7 @@ export const ELEMENT_CLEANUP_RULES: {
 /**
  * Active configuration (can be overridden via .swiftrc config file)
  */
-let activeAllowedTypes: string[] = [...ALLOWED_METADATA_TYPES];
-let activeDefaultExclusions: string[] = [...DEFAULT_EXCLUSIONS];
+let activeFormattingPatterns: string[] = [];
 let activeAlwaysExcluded: string[] = [...ALWAYS_EXCLUDED];
 let activeCleanupRules: { [metadataType: string]: ElementCleanupRule[] } = JSON.parse(
   JSON.stringify(ELEMENT_CLEANUP_RULES)
@@ -85,8 +57,7 @@ let activeCleanupRules: { [metadataType: string]: ElementCleanupRule[] } = JSON.
  * Configuration input for setMetadataConfig
  */
 export interface MetadataConfigInput {
-  allowed?: string[];
-  defaultExclusions?: string[];
+  formattingPatterns?: string[];
   alwaysExcluded?: string[];
   cleanupRules?: { [metadataType: string]: ElementCleanupRule[] };
 }
@@ -95,11 +66,8 @@ export interface MetadataConfigInput {
  * Set active metadata configuration (called when loading config)
  */
 export function setMetadataConfig(config: MetadataConfigInput): void {
-  if (config.allowed) {
-    activeAllowedTypes = config.allowed;
-  }
-  if (config.defaultExclusions) {
-    activeDefaultExclusions = config.defaultExclusions;
+  if (config.formattingPatterns) {
+    activeFormattingPatterns = config.formattingPatterns;
   }
   if (config.alwaysExcluded) {
     activeAlwaysExcluded = config.alwaysExcluded;
@@ -113,24 +81,17 @@ export function setMetadataConfig(config: MetadataConfigInput): void {
  * Reset metadata configuration to defaults
  */
 export function resetMetadataConfig(): void {
-  activeAllowedTypes = [...ALLOWED_METADATA_TYPES];
-  activeDefaultExclusions = [...DEFAULT_EXCLUSIONS];
+  activeFormattingPatterns = [];
   activeAlwaysExcluded = [...ALWAYS_EXCLUDED];
   activeCleanupRules = JSON.parse(JSON.stringify(ELEMENT_CLEANUP_RULES));
 }
 
 /**
- * Get currently active allowed metadata types
+ * Get allowed file patterns (derived from formatting rules)
+ * Files must match one of these patterns to be processed (unless --all is used)
  */
-export function getAllowedMetadataTypes(): string[] {
-  return activeAllowedTypes;
-}
-
-/**
- * Get currently active default exclusions
- */
-export function getDefaultExclusions(): string[] {
-  return activeDefaultExclusions;
+export function getAllowedFilePatterns(): string[] {
+  return activeFormattingPatterns;
 }
 
 /**

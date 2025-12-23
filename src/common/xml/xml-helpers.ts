@@ -3,7 +3,7 @@
  */
 
 import * as xml2js from "xml2js";
-import { getSortingRule } from "./sorting-rules.js";
+import { getFormattingRule } from "./sorting-rules.js";
 
 export interface XmlObject {
   [key: string]: any;
@@ -129,11 +129,11 @@ export function buildMetadataXml(obj: XmlObject, originalXml: string, filePath?:
   xmlOutput = restoreXmlEntities(xmlOutput);
   xmlOutput = xmlOutput.replace(/<(\w+)([^>]*)\/>/g, "<$1$2></$1>");
 
-  // Apply condensed format for specified arrays
+  // Apply condensed format for specified elements
   if (filePath) {
-    const sortingRule = getSortingRule(filePath);
-    if (sortingRule?.condensedArrays) {
-      for (const elementName of sortingRule.condensedArrays) {
+    const formattingRule = getFormattingRule(filePath);
+    if (formattingRule?.condensedElements) {
+      for (const elementName of formattingRule.condensedElements) {
         xmlOutput = condenseElement(xmlOutput, elementName);
       }
     }

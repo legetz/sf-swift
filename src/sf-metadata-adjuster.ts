@@ -4,14 +4,13 @@ import { sortXmlElements } from "./common/xml/sorter.js";
 import { createFileBackup } from "./common/helper/backup.js";
 import { hashString } from "./common/helper/string.js";
 import {
-  getAllowedMetadataTypes,
-  getDefaultExclusions,
+  getAllowedFilePatterns,
   getAlwaysExcluded,
   getCleanupRules,
   setMetadataConfig,
   resetMetadataConfig
 } from "./common/metadata/metadata-rules.js";
-import { setSortingRules, resetSortingRules } from "./common/xml/sorting-rules.js";
+import { setFormattingRules, resetFormattingRules } from "./common/xml/sorting-rules.js";
 import { SwiftrcConfig } from "./common/config/swiftrc-config.js";
 import { parseMetadataXml, prefixXmlEntities, buildMetadataXml, XmlObject } from "./common/xml/xml-helpers.js";
 
@@ -56,12 +55,11 @@ export class SfMetadataAdjuster {
 
     // Apply configuration if provided
     if (config) {
-      setSortingRules(config.sortingRules);
+      setFormattingRules(config.formatting);
       setMetadataConfig({
-        allowed: config.metadataTypes.allowed,
-        defaultExclusions: config.metadataTypes.defaultExclusions,
-        alwaysExcluded: config.metadataTypes.alwaysExcluded,
-        cleanupRules: config.cleanupRules
+        formattingPatterns: config.formatting.map((r) => r.filePattern),
+        alwaysExcluded: config.alwaysExcluded,
+        cleanupRules: config.cleanup
       });
     }
 
@@ -76,23 +74,19 @@ export class SfMetadataAdjuster {
       return t;
     });
 
-    // If no exclude types specified, use defaults; otherwise use the provided exclusions
-    if (excludeTypes.length === 0) {
-      this.excludeTypes = [...getDefaultExclusions()];
-    } else {
-      this.excludeTypes = excludeTypes.map((t) => {
-        // Normalize type names - ensure they end with -meta.xml
-        if (!t.endsWith("-meta.xml")) {
-          return `${t}-meta.xml`;
-        }
-        return t;
-      });
-    }
+    // Normalize exclude types
+    this.excludeTypes = excludeTypes.map((t) => {
+      // Normalize type names - ensure they end with -meta.xml
+      if (!t.endsWith("-meta.xml")) {
+        return `${t}-meta.xml`;
+      }
+      return t;
+    });
 
     // Validate that include types don't conflict with always-excluded types
     this.validateIncludeTypes();
 
-    // Validate that include types are whitelisted (unless --all is specified)
+    // Validate that include types are in formatting rules (unless --all is specified)
     this.validateWhitelistedTypes();
   }
 
@@ -108,7 +102,7 @@ export class SfMetadataAdjuster {
   }
 
   /**
-   * Validate that include types are whitelisted when --all is not specified
+   * Validate that include types have formatting rules when --all is not specified
    */
   private validateWhitelistedTypes(): void {
     // Skip validation if --all flag is used or no include types specified
@@ -116,24 +110,22 @@ export class SfMetadataAdjuster {
       return;
     }
 
-    const allowedTypes = getAllowedMetadataTypes();
+    const allowedPatterns = getAllowedFilePatterns();
     const nonWhitelistedTypes: string[] = [];
 
     for (const includeType of this.includeTypes) {
-      const isWhitelisted = allowedTypes.some((allowedType) => includeType.endsWith(allowedType));
+      const isAllowed = allowedPatterns.some((pattern) => includeType.endsWith(pattern));
 
-      if (!isWhitelisted) {
+      if (!isAllowed) {
         nonWhitelistedTypes.push(includeType);
       }
     }
 
     if (nonWhitelistedTypes.length > 0) {
       const nonWhitelistedList = nonWhitelistedTypes.join(", ");
-      const allowedList = allowedTypes.join(", ");
       throw new Error(
-        `Invalid configuration: The following types are not in the allowed whitelist: ${nonWhitelistedList}.\n` +
-          `Allowed types: ${allowedList}\n` +
-          `Use --all flag to process all metadata types without whitelist restrictions.`
+        `Invalid configuration: The following types have no formatting rules defined: ${nonWhitelistedList}.\n` +
+          `Add them to the 'formatting' section in .swiftrc or use --all flag.`
       );
     }
   }
@@ -181,12 +173,12 @@ export class SfMetadataAdjuster {
       return true;
     }
 
-    // Check regular exclusion list
+    // Check user-specified exclusion list
     return this.excludeTypes.some((excludePattern) => fileName.endsWith(excludePattern));
   }
 
   /**
-   * Check if a file matches the include list (if specified)
+   * Check if a file matches the include list or formatting patterns
    */
   private shouldIncludeFile(filePath: string): boolean {
     const fileName = path.basename(filePath);
@@ -196,10 +188,10 @@ export class SfMetadataAdjuster {
       return this.includeTypes.some((includePattern) => fileName.endsWith(includePattern));
     }
 
-    // If no include types specified and --all is NOT used, check against whitelist
+    // If no include types specified and --all is NOT used, check against formatting patterns
     if (!this.allowAll) {
-      const allowedTypes = getAllowedMetadataTypes();
-      return allowedTypes.some((allowedType) => fileName.endsWith(allowedType));
+      const allowedPatterns = getAllowedFilePatterns();
+      return allowedPatterns.some((pattern) => fileName.endsWith(pattern));
     }
 
     // If --all is used and no specific includes, accept all files (except excludes)
@@ -498,7 +490,7 @@ export class SfMetadataAdjuster {
       process.exit(1);
     } finally {
       // Reset configuration to defaults after processing
-      resetSortingRules();
+      resetFormattingRules();
       resetMetadataConfig();
     }
   }

@@ -7,7 +7,7 @@ import {
   buildMetadataXml,
   condenseElement
 } from "../../../src/common/xml/xml-helpers.js";
-import { setSortingRules, resetSortingRules } from "../../../src/common/xml/sorting-rules.js";
+import { setFormattingRules, resetFormattingRules } from "../../../src/common/xml/sorting-rules.js";
 
 describe("common/xml/xml-helpers", () => {
   describe("prefixXmlEntities", () => {
@@ -121,12 +121,12 @@ describe("common/xml/xml-helpers", () => {
       expect(rebuilt).to.not.include("___ENTITY_MARKER___");
     });
 
-    it("should apply condensed format for specified arrays in permission sets", async () => {
-      // Set up sorting rules with condensedArrays
-      setSortingRules([
+    it("should apply condensed format for specified elements in permission sets", async () => {
+      // Set up formatting rules with condensedElements
+      setFormattingRules([
         {
           filePattern: "permissionset-meta.xml",
-          condensedArrays: ["fieldPermissions", "objectPermissions"]
+          condensedElements: ["fieldPermissions", "objectPermissions"]
         }
       ]);
 
@@ -150,8 +150,8 @@ describe("common/xml/xml-helpers", () => {
       // Label should still be on its own line
       expect(rebuilt).to.contain("    <label>Test Permission Set</label>");
 
-      // Reset sorting rules
-      resetSortingRules();
+      // Reset formatting rules
+      resetFormattingRules();
     });
 
     it("should not apply condensed format when filePath is not provided", async () => {

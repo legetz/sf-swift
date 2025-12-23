@@ -6,7 +6,6 @@ import {
   findProjectRoot,
   getDefaultConfig,
   validateConfig,
-  mergeWithDefaults,
   generateDefaultConfig,
   writeDefaultConfig,
   loadSwiftrcConfig,
@@ -30,7 +29,7 @@ describe("common/config/swiftrc-config", () => {
     it("should find project root when .swiftrc exists", () => {
       const subDir = path.join(tempDir, "src", "nested");
       fs.mkdirSync(subDir, { recursive: true });
-      fs.writeFileSync(path.join(tempDir, ".swiftrc"), "sortingRules: []");
+      fs.writeFileSync(path.join(tempDir, ".swiftrc"), "formatting: []");
 
       const result = findProjectRoot(subDir);
       expect(result).to.equal(tempDir);
@@ -58,7 +57,7 @@ describe("common/config/swiftrc-config", () => {
       const nestedDir = path.join(tempDir, "nested");
       fs.mkdirSync(nestedDir);
       fs.mkdirSync(path.join(tempDir, ".git"));
-      fs.writeFileSync(path.join(nestedDir, ".swiftrc"), "sortingRules: []");
+      fs.writeFileSync(path.join(nestedDir, ".swiftrc"), "formatting: []");
 
       const result = findProjectRoot(nestedDir);
       expect(result).to.equal(nestedDir);
@@ -74,36 +73,40 @@ describe("common/config/swiftrc-config", () => {
     it("should return a complete config object", () => {
       const config = getDefaultConfig();
 
-      expect(config).to.have.property("sortingRules").that.is.an("array");
-      expect(config).to.have.property("metadataTypes").that.is.an("object");
-      expect(config).to.have.property("cleanupRules").that.is.an("object");
-
-      expect(config.metadataTypes).to.have.property("allowed").that.is.an("array");
-      expect(config.metadataTypes).to.have.property("defaultExclusions").that.is.an("array");
-      expect(config.metadataTypes).to.have.property("alwaysExcluded").that.is.an("array");
+      expect(config).to.have.property("formatting").that.is.an("array");
+      expect(config).to.have.property("cleanup").that.is.an("object");
+      expect(config).to.have.property("alwaysExcluded").that.is.an("array");
     });
 
-    it("should include known metadata types", () => {
+    it("should include known formatting rules", () => {
       const config = getDefaultConfig();
 
-      expect(config.metadataTypes.allowed).to.include("cls-meta.xml");
-      expect(config.metadataTypes.allowed).to.include("field-meta.xml");
-      expect(config.metadataTypes.alwaysExcluded).to.include("flow-meta.xml");
-    });
-
-    it("should include known sorting rules", () => {
-      const config = getDefaultConfig();
-      const fieldRule = config.sortingRules.find((r) => r.filePattern === "field-meta.xml");
-
+      const fieldRule = config.formatting.find((r) => r.filePattern === "field-meta.xml");
       expect(fieldRule).to.exist;
-      expect(fieldRule?.priorityKeys).to.include("fullName");
+      expect(fieldRule?.elementPriority).to.include("fullName");
+    });
+
+    it("should include alwaysExcluded types", () => {
+      const config = getDefaultConfig();
+
+      expect(config.alwaysExcluded).to.include("flow-meta.xml");
+    });
+
+    it("should include cleanup rules", () => {
+      const config = getDefaultConfig();
+
+      expect(config.cleanup).to.have.property("field-meta.xml");
+      expect(config.cleanup["field-meta.xml"]).to.be.an("array");
     });
   });
 
   describe("validateConfig", () => {
-    it("should return empty object for null or undefined", () => {
-      expect(validateConfig(null)).to.deep.equal({});
-      expect(validateConfig(undefined)).to.deep.equal({});
+    it("should throw for null config", () => {
+      expect(() => validateConfig(null)).to.throw(/Configuration file is empty/);
+    });
+
+    it("should throw for undefined config", () => {
+      expect(() => validateConfig(undefined)).to.throw(/Configuration file is empty/);
     });
 
     it("should throw for non-object config", () => {
@@ -111,68 +114,67 @@ describe("common/config/swiftrc-config", () => {
       expect(() => validateConfig(123)).to.throw(/must be a YAML object/);
     });
 
-    it("should validate sortingRules structure", () => {
+    it("should throw when formatting section is missing", () => {
+      expect(() => validateConfig({})).to.throw(/'formatting' section is required/);
+    });
+
+    it("should validate formatting structure", () => {
       expect(() =>
         validateConfig({
-          sortingRules: "not-an-array"
+          formatting: "not-an-array"
         })
-      ).to.throw(/sortingRules.*must be an array/);
+      ).to.throw(/formatting.*must be an array/);
 
       expect(() =>
         validateConfig({
-          sortingRules: [{ noFilePattern: true }]
+          formatting: [{ noFilePattern: true }]
         })
       ).to.throw(/filePattern is required/);
     });
 
-    it("should accept valid sortingRules", () => {
+    it("should accept valid formatting rules", () => {
       const result = validateConfig({
-        sortingRules: [
-          { filePattern: "test-meta.xml", priorityKeys: ["fullName"] },
+        formatting: [
+          { filePattern: "test-meta.xml", elementPriority: ["fullName"] },
           { filePattern: "other-meta.xml", unsortedArrays: ["items"] }
         ]
       });
 
-      expect(result.sortingRules).to.have.length(2);
-      expect(result.sortingRules?.[0].filePattern).to.equal("test-meta.xml");
+      expect(result.formatting).to.have.length(2);
+      expect(result.formatting[0].filePattern).to.equal("test-meta.xml");
+      expect(result.formatting[0].elementPriority).to.deep.equal(["fullName"]);
     });
 
-    it("should validate metadataTypes structure", () => {
-      expect(() =>
-        validateConfig({
-          metadataTypes: "not-an-object"
-        })
-      ).to.throw(/metadataTypes.*must be an object/);
-
-      expect(() =>
-        validateConfig({
-          metadataTypes: { allowed: "not-an-array" }
-        })
-      ).to.throw(/allowed must be an array/);
-    });
-
-    it("should accept valid metadataTypes", () => {
+    it("should accept sortedByElements in formatting rules", () => {
       const result = validateConfig({
-        metadataTypes: {
-          allowed: ["test-meta.xml"],
-          defaultExclusions: ["skip-meta.xml"],
-          alwaysExcluded: ["never-meta.xml"]
-        }
+        formatting: [{ filePattern: "test-meta.xml", sortedByElements: ["field", "name"] }]
       });
 
-      expect(result.metadataTypes?.allowed).to.deep.equal(["test-meta.xml"]);
+      expect(result.formatting[0].sortedByElements).to.deep.equal(["field", "name"]);
     });
 
-    it("should validate cleanupRules structure", () => {
+    it("should accept condensedElements in formatting rules", () => {
+      const result = validateConfig({
+        formatting: [
+          { filePattern: "permissionset-meta.xml", condensedElements: ["fieldPermissions"] }
+        ]
+      });
+
+      expect(result.formatting[0].condensedElements).to.deep.equal(["fieldPermissions"]);
+    });
+
+    it("should validate cleanup structure", () => {
       expect(() =>
         validateConfig({
-          cleanupRules: "not-an-object"
+          formatting: [{ filePattern: "test-meta.xml" }],
+          cleanup: "not-an-object"
         })
-      ).to.throw(/cleanupRules.*must be an object/);
+      ).to.throw(/cleanup.*must be an object/);
 
       expect(() =>
         validateConfig({
-          cleanupRules: {
+          formatting: [{ filePattern: "test-meta.xml" }],
+          cleanup: {
             "test-meta.xml": "not-an-array"
           }
         })
@@ -180,16 +182,18 @@ describe("common/config/swiftrc-config", () => {
 
       expect(() =>
         validateConfig({
-          cleanupRules: {
+          formatting: [{ filePattern: "test-meta.xml" }],
+          cleanup: {
             "test-meta.xml": [{ noElementName: true }]
           }
         })
       ).to.throw(/elementName is required/);
     });
 
-    it("should accept valid cleanupRules", () => {
+    it("should accept valid cleanup rules", () => {
       const result = validateConfig({
-        cleanupRules: {
+        formatting: [{ filePattern: "test-meta.xml" }],
+        cleanup: {
           "test-meta.xml": [
             {
               elementName: "testElement",
@@ -200,45 +204,35 @@ describe("common/config/swiftrc-config", () => {
         }
       });
 
-      expect(result.cleanupRules?.["test-meta.xml"]).to.have.length(1);
-      expect(result.cleanupRules?.["test-meta.xml"][0].elementName).to.equal("testElement");
-    });
-  });
-
-  describe("mergeWithDefaults", () => {
-    it("should return defaults when user config is empty", () => {
-      const defaults = getDefaultConfig();
-      const result = mergeWithDefaults({});
-
-      expect(result.sortingRules).to.deep.equal(defaults.sortingRules);
-      expect(result.metadataTypes).to.deep.equal(defaults.metadataTypes);
+      expect(result.cleanup["test-meta.xml"]).to.have.length(1);
+      expect(result.cleanup["test-meta.xml"][0].elementName).to.equal("testElement");
     });
 
-    it("should override sortingRules entirely when provided", () => {
-      const userRules = [{ filePattern: "custom-meta.xml", priorityKeys: ["id"] }];
-      const result = mergeWithDefaults({ sortingRules: userRules });
-
-      expect(result.sortingRules).to.deep.equal(userRules);
+    it("should validate alwaysExcluded structure", () => {
+      expect(() =>
+        validateConfig({
+          formatting: [{ filePattern: "test-meta.xml" }],
+          alwaysExcluded: "not-an-array"
+        })
+      ).to.throw(/alwaysExcluded.*must be an array/);
     });
 
-    it("should override metadataTypes.allowed when provided", () => {
-      const result = mergeWithDefaults({
-        metadataTypes: { allowed: ["custom-meta.xml"], defaultExclusions: [], alwaysExcluded: [] }
+    it("should accept valid alwaysExcluded", () => {
+      const result = validateConfig({
+        formatting: [{ filePattern: "test-meta.xml" }],
+        alwaysExcluded: ["flow-meta.xml", "custom-meta.xml"]
       });
 
-      expect(result.metadataTypes.allowed).to.deep.equal(["custom-meta.xml"]);
+      expect(result.alwaysExcluded).to.deep.equal(["flow-meta.xml", "custom-meta.xml"]);
     });
 
-    it("should deep merge cleanupRules", () => {
-      const result = mergeWithDefaults({
-        cleanupRules: {
-          "custom-meta.xml": [{ elementName: "test", removeValues: ["false"] }]
-        }
-      });
-
-      // Should have both default rules and custom rules
-      expect(result.cleanupRules).to.have.property("field-meta.xml");
-      expect(result.cleanupRules).to.have.property("custom-meta.xml");
+    it("should throw when formatting pattern conflicts with alwaysExcluded", () => {
+      expect(() =>
+        validateConfig({
+          formatting: [{ filePattern: "flow-meta.xml" }],
+          alwaysExcluded: ["flow-meta.xml"]
+        })
+      ).to.throw(/Configuration conflict.*formatting patterns are also in alwaysExcluded/);
     });
   });
 
@@ -246,9 +240,9 @@ describe("common/config/swiftrc-config", () => {
     it("should generate valid YAML content", () => {
       const yaml = generateDefaultConfig();
 
-      expect(yaml).to.include("sortingRules:");
-      expect(yaml).to.include("metadataTypes:");
-      expect(yaml).to.include("cleanupRules:");
+      expect(yaml).to.include("formatting:");
+      expect(yaml).to.include("cleanup:");
+      expect(yaml).to.include("alwaysExcluded:");
       expect(yaml).to.include("field-meta.xml");
     });
 
@@ -256,7 +250,13 @@ describe("common/config/swiftrc-config", () => {
       const yaml = generateDefaultConfig();
 
       expect(yaml).to.include("# .swiftrc");
-      expect(yaml).to.include("# Sorting rules");
+      expect(yaml).to.include("# Formatting rules");
+    });
+
+    it("should include elementPriority in output", () => {
+      const yaml = generateDefaultConfig();
+
+      expect(yaml).to.include("elementPriority:");
     });
   });
 
@@ -273,7 +273,7 @@ describe("common/config/swiftrc-config", () => {
       const loaded = loadSwiftrcConfig(tempDir);
 
       expect(loaded).to.not.be.null;
-      expect(loaded).to.have.property("sortingRules");
+      expect(loaded).to.have.property("formatting");
     });
   });
 
@@ -285,16 +285,17 @@ describe("common/config/swiftrc-config", () => {
 
     it("should load and parse valid config", () => {
       const configContent = `
-sortingRules:
+formatting:
   - filePattern: "test-meta.xml"
-    priorityKeys:
+    elementPriority:
       - id
 `;
       fs.writeFileSync(path.join(tempDir, ".swiftrc"), configContent);
 
       const result = loadSwiftrcConfig(tempDir);
-      expect(result?.sortingRules).to.have.length(1);
-      expect(result?.sortingRules?.[0].filePattern).to.equal("test-meta.xml");
+      expect(result?.formatting).to.have.length(1);
+      expect(result?.formatting[0].filePattern).to.equal("test-meta.xml");
+      expect(result?.formatting[0].elementPriority).to.deep.equal(["id"]);
     });
 
     it("should throw for invalid YAML syntax", () => {
@@ -305,39 +306,28 @@ sortingRules:
   });
 
   describe("getConfig", () => {
-    it("should return defaults when no config exists", () => {
-      const result = getConfig(tempDir, { autoGenerate: false });
-      const defaults = getDefaultConfig();
-
-      expect(result.sortingRules).to.deep.equal(defaults.sortingRules);
-    });
-
-    it("should auto-generate config when autoGenerate is true", () => {
-      getConfig(tempDir, { autoGenerate: true, silent: true });
+    it("should auto-create config when no config exists", () => {
+      const result = getConfig(tempDir, { silent: true });
 
       expect(fs.existsSync(path.join(tempDir, ".swiftrc"))).to.be.true;
+      expect(result).to.have.property("formatting");
     });
 
-    it("should not auto-generate when autoGenerate is false", () => {
-      getConfig(tempDir, { autoGenerate: false });
-
-      expect(fs.existsSync(path.join(tempDir, ".swiftrc"))).to.be.false;
-    });
-
-    it("should merge user config with defaults", () => {
+    it("should use config as-is without merging", () => {
       const configContent = `
-metadataTypes:
-  allowed:
-    - custom-meta.xml
+formatting:
+  - filePattern: "custom-meta.xml"
 `;
       fs.writeFileSync(path.join(tempDir, ".swiftrc"), configContent);
 
-      const result = getConfig(tempDir);
+      const result = getConfig(tempDir, { silent: true });
 
-      // User config should override allowed list
-      expect(result.metadataTypes.allowed).to.deep.equal(["custom-meta.xml"]);
-      // But defaults should still be used for other fields
-      expect(result.metadataTypes.alwaysExcluded).to.include("flow-meta.xml");
+      // User config should be used exactly as-is
+      expect(result.formatting).to.have.length(1);
+      expect(result.formatting[0].filePattern).to.equal("custom-meta.xml");
+      // cleanup and alwaysExcluded should be empty since not in user config
+      expect(result.cleanup).to.deep.equal({});
+      expect(result.alwaysExcluded).to.deep.equal([]);
     });
 
     it("should find config from nested directory", () => {
@@ -345,13 +335,21 @@ metadataTypes:
       fs.mkdirSync(nestedDir, { recursive: true });
 
       const configContent = `
-sortingRules:
+formatting:
   - filePattern: "nested-meta.xml"
 `;
       fs.writeFileSync(path.join(tempDir, ".swiftrc"), configContent);
 
-      const result = getConfig(nestedDir);
-      expect(result.sortingRules[0].filePattern).to.equal("nested-meta.xml");
+      const result = getConfig(nestedDir, { silent: true });
+      expect(result.formatting[0].filePattern).to.equal("nested-meta.xml");
+    });
+
+    it("should return defaults when auto-creating config", () => {
+      const defaults = getDefaultConfig();
+      const result = getConfig(tempDir, { silent: true });
+
+      expect(result.formatting).to.deep.equal(defaults.formatting);
+      expect(result.alwaysExcluded).to.deep.equal(defaults.alwaysExcluded);
     });
   });
 });
