@@ -4,8 +4,10 @@ import {
   restoreXmlEntities,
   extractRootElementName,
   parseMetadataXml,
-  buildMetadataXml
+  buildMetadataXml,
+  condenseElement
 } from "../../../src/common/xml/xml-helpers.js";
+import { setFormattingRules, resetFormattingRules } from "../../../src/common/xml/sorting-rules.js";
 
 describe("common/xml/xml-helpers", () => {
   describe("prefixXmlEntities", () => {
@@ -117,6 +119,131 @@ describe("common/xml/xml-helpers", () => {
       expect(rebuilt).to.contain("&apos;");
       expect(rebuilt).to.contain("&amp;");
       expect(rebuilt).to.not.include("___ENTITY_MARKER___");
+    });
+
+    it("should apply condensed format for specified elements in permission sets", async () => {
+      // Set up formatting rules with condensedElements
+      setFormattingRules([
+        {
+          filePattern: "permissionset-meta.xml",
+          condensedElements: ["fieldPermissions", "objectPermissions"]
+        }
+      ]);
+
+      const original = `<?xml version="1.0" encoding="UTF-8"?>
+<PermissionSet>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Account.Name</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <label>Test Permission Set</label>
+</PermissionSet>`;
+
+      const prefixed = prefixXmlEntities(original);
+      const parsed = await parseMetadataXml(prefixed);
+
+      const rebuilt = buildMetadataXml(parsed, original, "Test.permissionset-meta.xml");
+
+      // Verify condensed format - fieldPermissions should be on a single line
+      expect(rebuilt).to.contain(
+        "<fieldPermissions><editable>true</editable><field>Account.Name</field><readable>true</readable></fieldPermissions>"
+      );
+      // Label should still be on its own line
+      expect(rebuilt).to.contain("    <label>Test Permission Set</label>");
+
+      // Reset formatting rules
+      resetFormattingRules();
+    });
+
+    it("should not apply condensed format when filePath is not provided", async () => {
+      const original = `<?xml version="1.0" encoding="UTF-8"?>
+<PermissionSet>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Account.Name</field>
+    </fieldPermissions>
+</PermissionSet>`;
+
+      const prefixed = prefixXmlEntities(original);
+      const parsed = await parseMetadataXml(prefixed);
+
+      const rebuilt = buildMetadataXml(parsed, original);
+
+      // Without filePath, condensed format should not be applied
+      expect(rebuilt).to.contain("    <fieldPermissions>");
+      expect(rebuilt).to.contain("        <editable>true</editable>");
+    });
+  });
+
+  describe("condenseElement", () => {
+    it("should condense multi-line element to single line", () => {
+      const input = `<root>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Account.Name</field>
+        <readable>true</readable>
+    </fieldPermissions>
+</root>`;
+
+      const result = condenseElement(input, "fieldPermissions");
+
+      expect(result).to.contain(
+        "<fieldPermissions><editable>true</editable><field>Account.Name</field><readable>true</readable></fieldPermissions>"
+      );
+    });
+
+    it("should condense multiple elements of the same type", () => {
+      const input = `<root>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Account.Name</field>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Account.Description</field>
+    </fieldPermissions>
+</root>`;
+
+      const result = condenseElement(input, "fieldPermissions");
+
+      expect(result).to.contain(
+        "<fieldPermissions><editable>true</editable><field>Account.Name</field></fieldPermissions>"
+      );
+      expect(result).to.contain(
+        "<fieldPermissions><editable>false</editable><field>Account.Description</field></fieldPermissions>"
+      );
+    });
+
+    it("should leave non-matching elements unchanged", () => {
+      const input = `<root>
+    <label>Test Label</label>
+    <description>Test Description</description>
+</root>`;
+
+      const result = condenseElement(input, "fieldPermissions");
+
+      expect(result).to.equal(input);
+    });
+
+    it("should handle objectPermissions condensation", () => {
+      const input = `<root>
+    <objectPermissions>
+        <allowCreate>false</allowCreate>
+        <allowDelete>false</allowDelete>
+        <allowEdit>true</allowEdit>
+        <allowRead>true</allowRead>
+        <modifyAllRecords>false</modifyAllRecords>
+        <object>Allocation_Authorization__c</object>
+        <viewAllRecords>false</viewAllRecords>
+    </objectPermissions>
+</root>`;
+
+      const result = condenseElement(input, "objectPermissions");
+
+      expect(result).to.contain(
+        "<objectPermissions><allowCreate>false</allowCreate><allowDelete>false</allowDelete><allowEdit>true</allowEdit><allowRead>true</allowRead><modifyAllRecords>false</modifyAllRecords><object>Allocation_Authorization__c</object><viewAllRecords>false</viewAllRecords></objectPermissions>"
+      );
     });
   });
 });

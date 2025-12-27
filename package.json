@@ -27,7 +27,8 @@
     "test:coverage": "nyc mocha",
     "test:watch": "mocha --watch",
     "prettier": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "prettier:verify": "prettier --list-different \"src/**/*.ts\" \"test/**/*.ts\""
+    "prettier:verify": "prettier --list-different \"src/**/*.ts\" \"test/**/*.ts\"",
+    "prepare": "husky"
   },
   "keywords": [
     "salesforce-cli-plugin",
@@ -53,10 +54,13 @@
   "devDependencies": {
     "@salesforce/dev-scripts": "^11.0.4",
     "@types/chai": "^5.2.3",
+    "@types/js-yaml": "^4.0.9",
     "@types/mocha": "^10.0.10",
     "@types/node": "^24.9.1",
     "@types/xml2js": "^0.4.14",
     "chai": "^6.2.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
     "mocha": "^11.7.4",
     "nyc": "^17.1.0",
     "prettier": "^3.6.2",
@@ -64,11 +68,15 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   },
+  "lint-staged": {
+    "*.ts": "prettier --write"
+  },
   "dependencies": {
     "@oclif/core": "^4.7.2",
     "@salesforce/core": "^8.23.3",
     "@salesforce/kit": "^3.2.4",
     "@salesforce/sf-plugins-core": "^12.2.5",
+    "js-yaml": "^4.1.0",
     "xml2js": "^0.6.2"
   }
 }
