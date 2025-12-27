@@ -168,9 +168,6 @@ export function getActiveFormattingRules(): FormattingRule[] {
   return activeFormattingRules;
 }
 
-/** @deprecated Use getActiveFormattingRules instead */
-export const getActiveSortingRules = getActiveFormattingRules;
-
 /**
  * Get formatting rule for a given file path
  */

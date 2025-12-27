@@ -6,8 +6,6 @@ import {
   findProjectRoot,
   getDefaultConfig,
   validateConfig,
-  generateDefaultConfig,
-  writeDefaultConfig,
   loadSwiftrcConfig,
   getConfig
 } from "../../../src/common/config/swiftrc-config.js";
@@ -231,47 +229,6 @@ describe("common/config/swiftrc-config", () => {
           alwaysExcluded: ["flow-meta.xml"]
         })
       ).to.throw(/Configuration conflict.*formatting patterns are also in alwaysExcluded/);
-    });
-  });
-
-  describe("generateDefaultConfig", () => {
-    it("should generate valid YAML content", () => {
-      const yaml = generateDefaultConfig();
-
-      expect(yaml).to.include("formatting:");
-      expect(yaml).to.include("cleanup:");
-      expect(yaml).to.include("alwaysExcluded:");
-      expect(yaml).to.include("field-meta.xml");
-    });
-
-    it("should include helpful comments", () => {
-      const yaml = generateDefaultConfig();
-
-      expect(yaml).to.include("# .swiftrc");
-      expect(yaml).to.include("# Formatting rules");
-    });
-
-    it("should include elementPriority in output", () => {
-      const yaml = generateDefaultConfig();
-
-      expect(yaml).to.include("elementPriority:");
-    });
-  });
-
-  describe("writeDefaultConfig", () => {
-    it("should create .swiftrc file", () => {
-      const configPath = writeDefaultConfig(tempDir);
-
-      expect(fs.existsSync(configPath)).to.be.true;
-      expect(configPath).to.equal(path.join(tempDir, ".swiftrc"));
-    });
-
-    it("should write parseable YAML content", () => {
-      writeDefaultConfig(tempDir);
-      const loaded = loadSwiftrcConfig(tempDir);
-
-      expect(loaded).to.not.be.null;
-      expect(loaded).to.have.property("formatting");
     });
   });
 

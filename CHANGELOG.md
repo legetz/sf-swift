@@ -8,13 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- 📚 **Configuration Guide**: New `CONFIGURATION.md` with detailed documentation for all formatting options including before/after examples
-- 🚀 **Quickstart Guide**: Added quickstart section to README with integration examples for Husky pre-commit hooks, GitHub Actions CI/CD, and VSCode format-on-save
 - 🔧 **Formatting Configuration Options**: New `.swiftrc` configuration options for fine-grained control over XML formatting:
   - `elementPriority` - specify which keys appear first within each object (applies recursively at all levels)
   - `sortedByElements` - specify which child keys to use for sorting array elements
   - `condensedElements` - format specified elements on single lines for cleaner git diffs
   - `unsortedArrays` - preserve original order for arrays where position matters (e.g., filters with booleanFilter)
+- 📚 **Configuration Guide**: New `CONFIGURATION.md` with detailed documentation for all formatting options including before/after examples
+- 🚀 **Quickstart Guide**: Added quickstart section to README
 
 ## [1.0.18] - 2025-12-17
 
