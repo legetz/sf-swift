@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-01-22
+
 ### Added
 - 🧰 **Config Init Command**: Added `sf swift config init` to generate a default `.swiftrc` and create dated backups when one already exists.
 - 🔧 **Formatting Configuration Options**: New `.swiftrc` configuration options for fine-grained control over XML formatting:
@@ -141,7 +143,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Features
 - **Command**: `sf swift metadata adjust` - Main command for sorting metadata files
 
-[Unreleased]: https://github.com/legetz/sf-swift/compare/v1.0.18...HEAD
+[Unreleased]: https://github.com/legetz/sf-swift/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/legetz/sf-swift/releases/tag/v1.1.0
 [1.0.18]: https://github.com/legetz/sf-swift/releases/tag/v1.0.18
 [1.0.15]: https://github.com/legetz/sf-swift/releases/tag/v1.0.15
 [1.0.14]: https://github.com/legetz/sf-swift/releases/tag/v1.0.14
