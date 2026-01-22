@@ -154,6 +154,12 @@ export default class MetadataAdjust extends SfCommand<void> {
       // Load configuration from --config flag, .swiftrc, or use defaults
       const config = getConfig(targetDir, { configPath: flags.config });
 
+      if (hasConfigFlag) {
+        console.log(messages.getMessage("output.info.configUsed", [path.resolve(flags.config as string)]));
+      } else if (hasSwiftrcFile) {
+        console.log(messages.getMessage("output.info.configUsed", [path.join(projectRoot, ".swiftrc")]));
+      }
+
       const adjuster = new SfMetadataAdjuster(targetDir, {
         includeTypes,
         excludeTypes,

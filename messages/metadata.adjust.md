@@ -32,6 +32,9 @@ Process ALL metadata types without whitelist restrictions. By default, only safe
 # output.warning.configOverrides
 Detected both configuration file and include/exclude flags given. Prefer using only config file to avoid confusion.
 
+# output.info.configUsed
+⚙️ Using configuration file: %s
+
 # examples
 - Adjust metadata files within current folder: 
 <%= config.bin %> <%= command.id %>
