@@ -7,10 +7,28 @@ import * as path from "path";
 import * as yaml from "js-yaml";
 import { FormattingRule } from "../xml/sorting-rules.js";
 import { ElementCleanupRule } from "../metadata/metadata-rules.js";
-import { getDefaultConfig, MetadataAdjustConfig, SwiftrcConfig } from "./default-config.js";
+import { IntegrityReferenceSurface, RemovedMetadataType } from "../metadata/metadata-integrity-rules.js";
+import {
+  DEFAULT_INTEGRITY_REMOVED_TYPES,
+  DEFAULT_INTEGRITY_RULES,
+  getDefaultConfig,
+  MetadataAdjustConfig,
+  MetadataIntegrityConfig,
+  MetadataIntegrityRuleConfig,
+  SwiftrcConfig
+} from "./default-config.js";
 
 // Re-export types and getDefaultConfig for convenience
-export { getDefaultConfig, MetadataAdjustConfig, SwiftrcConfig } from "./default-config.js";
+export {
+  DEFAULT_INTEGRITY_REMOVED_TYPES,
+  DEFAULT_INTEGRITY_RULES,
+  getDefaultConfig,
+  getDefaultIntegrityConfig,
+  MetadataAdjustConfig,
+  MetadataIntegrityConfig,
+  MetadataIntegrityRuleConfig,
+  SwiftrcConfig
+} from "./default-config.js";
 
 /**
  * Options for getConfig function
@@ -231,6 +249,84 @@ export function validateConfig(rawConfig: unknown): SwiftrcConfig {
   validateNoPatternConflicts(adjustConfig.formatting, adjustConfig.alwaysExcluded);
 
   result.metadata.adjust = adjustConfig;
+
+  if (metadata.integrity !== undefined) {
+    if (metadata.integrity === null || typeof metadata.integrity !== "object") {
+      throw new Error(".swiftrc: 'metadata.integrity' must be an object.");
+    }
+
+    const integrity = metadata.integrity as Record<string, unknown>;
+    const integrityConfig: MetadataIntegrityConfig = {};
+
+    if (integrity.removedTypes !== undefined) {
+      if (!Array.isArray(integrity.removedTypes)) {
+        throw new Error(".swiftrc: 'metadata.integrity.removedTypes' must be an array of strings.");
+      }
+
+      const removedTypes = integrity.removedTypes as unknown[];
+      const allowedTypes = new Set<RemovedMetadataType>(DEFAULT_INTEGRITY_REMOVED_TYPES);
+      const normalized: RemovedMetadataType[] = [];
+
+      for (const value of removedTypes) {
+        if (typeof value !== "string" || !allowedTypes.has(value as RemovedMetadataType)) {
+          throw new Error(`.swiftrc: metadata.integrity.removedTypes contains unknown value '${value}'.`);
+        }
+        normalized.push(value as RemovedMetadataType);
+      }
+
+      integrityConfig.removedTypes = normalized;
+    }
+
+    if (integrity.rules !== undefined) {
+      if (!Array.isArray(integrity.rules)) {
+        throw new Error(".swiftrc: 'metadata.integrity.rules' must be an array of rule objects.");
+      }
+
+      const allowedTypes = new Set<RemovedMetadataType>(DEFAULT_INTEGRITY_REMOVED_TYPES);
+      const allowedSurfaces = new Set<IntegrityReferenceSurface>(
+        DEFAULT_INTEGRITY_RULES.flatMap((rule) => rule.surfaces)
+      );
+
+      const rules: MetadataIntegrityRuleConfig[] = [];
+      for (const [index, rule] of integrity.rules.entries()) {
+        if (!rule || typeof rule !== "object") {
+          throw new Error(`.swiftrc: metadata.integrity.rules[${index}] must be an object.`);
+        }
+
+        const ruleObj = rule as Record<string, unknown>;
+        const removedType = ruleObj.removedType;
+        if (typeof removedType !== "string" || !allowedTypes.has(removedType as RemovedMetadataType)) {
+          throw new Error(`.swiftrc: metadata.integrity.rules[${index}].removedType is invalid.`);
+        }
+
+        const surfaces = ruleObj.surfaces;
+        if (!Array.isArray(surfaces) || surfaces.length === 0) {
+          throw new Error(
+            `.swiftrc: metadata.integrity.rules[${index}].surfaces must be a non-empty array of strings.`
+          );
+        }
+
+        const normalizedSurfaces: IntegrityReferenceSurface[] = [];
+        for (const surface of surfaces) {
+          if (typeof surface !== "string" || !allowedSurfaces.has(surface as IntegrityReferenceSurface)) {
+            throw new Error(
+              `.swiftrc: metadata.integrity.rules[${index}].surfaces contains unknown value '${surface}'.`
+            );
+          }
+          normalizedSurfaces.push(surface as IntegrityReferenceSurface);
+        }
+
+        rules.push({
+          removedType: removedType as RemovedMetadataType,
+          surfaces: normalizedSurfaces
+        });
+      }
+
+      integrityConfig.rules = rules;
+    }
+
+    result.metadata.integrity = integrityConfig;
+  }
 
   return result;
 }

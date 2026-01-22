@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- 🧭 **Integrity Config**: `.swiftrc` now supports `metadata.integrity` rules to control which removed types and surfaces are scanned.
+- 🧰 **Integrity Config Flag**: Added `--config` / `-c` to `sf swift metadata integrity` to load a specific YAML file.
+- 🪄 **Config Init Defaults**: `sf swift config init` now writes built-in metadata integrity defaults into `.swiftrc`.
+
 ## [1.1.0] - 2026-01-22
 
 ### Added

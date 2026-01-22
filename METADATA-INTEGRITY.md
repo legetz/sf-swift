@@ -38,6 +38,9 @@ sf swift metadata integrity ./force-app/main/default
 # Emit JSON for automation
 sf swift metadata integrity --json
 
+# Use an explicit config file
+sf swift metadata integrity --config ./ci/swift.yaml
+
 # Simulate removals without touching Git history
 sf swift metadata integrity --test-with-class LegacyService --test-with-field Account.Legacy__c
 ```
@@ -48,9 +51,33 @@ sf swift metadata integrity --test-with-class LegacyService --test-with-field Ac
 |------|---------|
 | `--git-depth <n>` | Number of commits to inspect for deletions (default `5`, automatically clamped to available history). |
 | `--target-dir <path>` | Directory to analyse when no positional path is provided. |
+| `--config <path>` | Load a YAML config file instead of searching for `.swiftrc`. |
 | `--json` | Emit machine-readable output for pipelines and bots. |
 | `--test-with-class <name>` | Pretend an Apex class was removed. Repeatable for multiple classes. |
 | `--test-with-field <Object.Field__c>` | Pretend a custom field was removed. Repeatable for multiple fields. |
+
+## Configuration with `.swiftrc`
+
+Use `.swiftrc` to control which removed metadata types and reference surfaces are checked by the integrity command. If the config omits `metadata.integrity`, built-in defaults apply.
+
+```yaml
+metadata:
+  integrity:
+    removedTypes: [ApexClass, CustomField, VisualforcePage]
+    rules:
+      - removedType: ApexClass
+        surfaces: [profile, permissionSet, lwc, aura, flow, apexSource]
+      - removedType: CustomField
+        surfaces: [profile, permissionSet, flow, formulaField, layout, validationRule, fieldSet, recordType, compactLayout]
+      - removedType: VisualforcePage
+        surfaces: [profile, permissionSet]
+```
+
+### Notes
+
+- Omit `metadata.integrity.rules` to use built-in defaults for the selected `removedTypes`.
+- Omit `metadata.integrity.removedTypes` to check all supported removed types.
+- Use `--config` to load an alternate YAML file instead of searching for `.swiftrc`.
 
 ## Output anatomy
 

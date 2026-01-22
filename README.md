@@ -241,7 +241,7 @@ The adjust command supports a YAML configuration file (`.swiftrc`) in your proje
 
 - If no `.swiftrc` file exists, the tool uses **built-in defaults**
 - If a `.swiftrc` file is found in your project root, it is loaded and used
-- Use `--config path/to/file.yaml` to specify a custom configuration file
+- Use `--config path/to/file.yaml` to specify a custom configuration file for `metadata adjust` or `metadata integrity`
 
 To customize the configuration, copy the sample config below to `.swiftrc` in your project root.
 
@@ -291,6 +291,16 @@ metadata:
       # File types that are always excluded (cannot be processed)
       alwaysExcluded:
          - flow-meta.xml
+
+   integrity:
+      removedTypes: [ApexClass, CustomField, VisualforcePage]
+      rules:
+         - removedType: ApexClass
+            surfaces: [profile, permissionSet, lwc, aura, flow, apexSource]
+         - removedType: CustomField
+            surfaces: [profile, permissionSet, flow, formulaField, layout, validationRule, fieldSet, recordType, compactLayout]
+         - removedType: VisualforcePage
+            surfaces: [profile, permissionSet]
 ```
 
 #### Configuration options
@@ -305,6 +315,10 @@ metadata:
 | `metadata.adjust.formatting[].condensedElements` | Elements formatted on a single line for better diffs |
 | `metadata.adjust.cleanup` | Rules for removing default/empty values per metadata type |
 | `metadata.adjust.alwaysExcluded` | File types that can never be processed |
+| `metadata.integrity.removedTypes` | Which removed metadata types to consider (ApexClass, CustomField, VisualforcePage) |
+| `metadata.integrity.rules` | Per-removed-type surface rules for integrity scans |
+| `metadata.integrity.rules[].removedType` | Removed metadata type for the rule |
+| `metadata.integrity.rules[].surfaces` | Reference surfaces to scan (e.g., profile, permissionSet, flow, layout) |
 
 #### Implicit whitelist
 
@@ -467,6 +481,9 @@ sf swift metadata integrity ./force-app/main/default --git-depth 10
 
 # Emit machine-readable results
 sf swift metadata integrity --json
+
+# Use a specific config file
+sf swift metadata integrity --config ./ci/swift.yaml
 ```
 
 ### Flags
@@ -474,6 +491,7 @@ sf swift metadata integrity --json
 | Flag | Short | Description | Default |
 |------|-------|-------------|---------|
 | `--target-dir` | `-d` | Directory to analyze when no positional path is given | `.` (current) |
+| `--config` | `-c` | Path to YAML config file (skips .swiftrc discovery) | - |
 | `--git-depth` | `-g` | Number of commits to inspect for deletions (clamped to history) | `5` |
 | `--test-with-class` | - | Treat provided Apex class names as removed metadata (repeatable). Useful when testing class-related rules without deleting code. | Disabled |
 | `--test-with-field` | - | Treat provided field API names (`Object.Field__c`) as removed metadata (repeatable). Useful for auditing field access without Git changes. | Disabled |

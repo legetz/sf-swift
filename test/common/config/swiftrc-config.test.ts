@@ -77,6 +77,9 @@ describe("common/config/swiftrc-config", () => {
       expect(config.metadata.adjust).to.have.property("formatting").that.is.an("array");
       expect(config.metadata.adjust).to.have.property("cleanup").that.is.an("object");
       expect(config.metadata.adjust).to.have.property("alwaysExcluded").that.is.an("array");
+      expect(config.metadata).to.have.property("integrity");
+      expect(config.metadata.integrity?.removedTypes).to.be.an("array");
+      expect(config.metadata.integrity?.rules).to.be.an("array");
     });
 
     it("should include known formatting rules", () => {
@@ -98,6 +101,15 @@ describe("common/config/swiftrc-config", () => {
 
       expect(config.metadata.adjust.cleanup).to.have.property("field-meta.xml");
       expect(config.metadata.adjust.cleanup["field-meta.xml"]).to.be.an("array");
+    });
+
+    it("should include integrity defaults", () => {
+      const config = getDefaultConfig();
+
+      expect(config.metadata.integrity?.removedTypes).to.include("ApexClass");
+      expect(config.metadata.integrity?.removedTypes).to.include("CustomField");
+      expect(config.metadata.integrity?.removedTypes).to.include("VisualforcePage");
+      expect(config.metadata.integrity?.rules).to.be.an("array").that.is.not.empty;
     });
   });
 
@@ -281,6 +293,83 @@ describe("common/config/swiftrc-config", () => {
         })
       ).to.throw(/Configuration conflict.*formatting patterns are also in alwaysExcluded/);
     });
+
+    it("should accept valid integrity configuration", () => {
+      const result = validateConfig({
+        metadata: {
+          adjust: {
+            formatting: [{ filePattern: "test-meta.xml" }]
+          },
+          integrity: {
+            removedTypes: ["ApexClass"],
+            rules: [
+              {
+                removedType: "ApexClass",
+                surfaces: ["profile", "permissionSet"]
+              }
+            ]
+          }
+        }
+      });
+
+      expect(result.metadata.integrity?.removedTypes).to.deep.equal(["ApexClass"]);
+      expect(result.metadata.integrity?.rules).to.have.length(1);
+    });
+
+    it("should reject unknown integrity removedTypes", () => {
+      expect(() =>
+        validateConfig({
+          metadata: {
+            adjust: {
+              formatting: [{ filePattern: "test-meta.xml" }]
+            },
+            integrity: {
+              removedTypes: ["UnknownType"]
+            }
+          }
+        })
+      ).to.throw(/metadata\.integrity\.removedTypes contains unknown value/);
+    });
+
+    it("should reject unknown integrity surfaces", () => {
+      expect(() =>
+        validateConfig({
+          metadata: {
+            adjust: {
+              formatting: [{ filePattern: "test-meta.xml" }]
+            },
+            integrity: {
+              rules: [
+                {
+                  removedType: "ApexClass",
+                  surfaces: ["profiles"]
+                }
+              ]
+            }
+          }
+        })
+      ).to.throw(/metadata\.integrity\.rules\[0\]\.surfaces contains unknown value/);
+    });
+
+    it("should reject empty integrity surfaces", () => {
+      expect(() =>
+        validateConfig({
+          metadata: {
+            adjust: {
+              formatting: [{ filePattern: "test-meta.xml" }]
+            },
+            integrity: {
+              rules: [
+                {
+                  removedType: "ApexClass",
+                  surfaces: []
+                }
+              ]
+            }
+          }
+        })
+      ).to.throw(/metadata\.integrity\.rules\[0\]\.surfaces must be a non-empty array/);
+    });
   });
 
   describe("loadSwiftrcConfig", () => {
@@ -324,6 +413,8 @@ metadata:
       const content = fs.readFileSync(configPath, "utf8");
       expect(content).to.include("metadata:");
       expect(content).to.include("adjust:");
+      expect(content).to.include("integrity:");
+      expect(content).to.include("removedTypes:");
       expect(content).to.include("formatting:");
       expect(content).to.include("alwaysExcluded:");
     });
@@ -381,6 +472,7 @@ metadata:
       // cleanup and alwaysExcluded should be empty since not in user config
       expect(result.metadata.adjust.cleanup).to.deep.equal({});
       expect(result.metadata.adjust.alwaysExcluded).to.deep.equal([]);
+      expect(result.metadata.integrity).to.equal(undefined);
     });
 
     it("should find config from nested directory", () => {
@@ -407,6 +499,7 @@ metadata:
       expect(fs.existsSync(path.join(tempDir, ".swiftrc"))).to.be.false;
       expect(result.metadata.adjust.formatting).to.deep.equal(defaults.metadata.adjust.formatting);
       expect(result.metadata.adjust.alwaysExcluded).to.deep.equal(defaults.metadata.adjust.alwaysExcluded);
+      expect(result.metadata.integrity).to.deep.equal(defaults.metadata.integrity);
     });
 
     it("should load config from configPath when specified", () => {

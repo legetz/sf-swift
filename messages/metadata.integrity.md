@@ -7,6 +7,9 @@ Path to the Salesforce project root to analyze. Defaults to current directory if
 # flags.targetDir.description
 Directory containing metadata to analyze. Defaults to current working directory.
 
+# flags.config.description
+Path to a YAML config file to load instead of searching for .swiftrc.
+
 # flags.gitDepth.description
 Number of commits to inspect for deletions. Values greater than available history will be clamped.
 
@@ -36,13 +39,13 @@ Treat provided field API names (`Object.Field__c`) as manually removed for integ
 ℹ️ Git history only contained %d commit(s); requested depth of %d was clamped.
 
 # log.metadataAnalysisComplete
-🔍 Scanned %d profile/permission set file(s) for access references.
+🔍 Scanned %d permission file(s) for Apex access references.
 
 # log.sourceAnalysisComplete
-🔍 Scanned %d source file(s) (Apex, Visualforce, LWC, Aura) for Apex class references.
+🔍 Scanned %d code file(s) for Apex class references.
 
 # log.flowAnalysisComplete
-🔍 Scanned %d Flow definition file(s) for Apex class and field references.
+🔍 Scanned %d flow file(s) for Apex class and field references.
 
 # log.formulaAnalysisComplete
 🔍 Scanned %d custom field file(s) for formula references.
@@ -82,6 +85,12 @@ Treat provided field API names (`Object.Field__c`) as manually removed for integ
 
 # warn.testWithFieldInvalid
 ⚠️ Ignoring --test-with-field value '%s'. Provide a field API name in the form `Object.Field`.
+
+# warn.testWithClassDisabled
+⚠️ Skipping --test-with-class values because Apex class checks are disabled by config.
+
+# warn.testWithFieldDisabled
+⚠️ Skipping --test-with-field values because custom field checks are disabled by config.
 
 # error.issuesFound
 Detected %d metadata integrity issue(s). See above for details.

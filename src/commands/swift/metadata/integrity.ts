@@ -9,6 +9,11 @@ import { ensureDirectory } from "../../../common/helper/filesystem.js";
 import { findFilesBySuffix } from "../../../common/helper/file-finder.js";
 import { parseMetadataXml } from "../../../common/xml/xml-helpers.js";
 import {
+  getConfig,
+  getDefaultIntegrityConfig,
+  MetadataIntegrityConfig
+} from "../../../common/config/swiftrc-config.js";
+import {
   buildRemovedMetadataIndex,
   createManualRemovedItem,
   classifyRemovedMetadataFile,
@@ -49,6 +54,10 @@ export default class MetadataIntegrity extends SfCommand<MetadataIntegrityResult
       char: "d",
       description: messages.getMessage("flags.targetDir.description")
     }),
+    config: Flags.string({
+      char: "c",
+      description: messages.getMessage("flags.config.description")
+    }),
     "git-depth": Flags.integer({
       char: "g",
       description: messages.getMessage("flags.gitDepth.description"),
@@ -72,11 +81,20 @@ export default class MetadataIntegrity extends SfCommand<MetadataIntegrityResult
     const start = Date.now();
     const gitDepth = flags["git-depth"] ?? 5;
 
-    const { removedItems, actualDepth } = this.getRemovedMetadataItems(targetDir, gitDepth);
+    const config = getConfig(targetDir, { configPath: flags.config });
+    const integrityConfig = this.resolveIntegrityConfig(config.metadata.integrity);
+    const removedTypeSet = new Set(integrityConfig.removedTypes);
+
+    const { removedItems: discoveredItems, actualDepth } = this.getRemovedMetadataItems(targetDir, gitDepth);
+    const removedItems = discoveredItems.filter((item) => removedTypeSet.has(item.type));
     const manualClasses = this.normalizeStringArray(flags["test-with-class"]);
     const manualFields = this.normalizeStringArray(flags["test-with-field"]);
 
     for (const identifier of manualClasses) {
+      if (!removedTypeSet.has("ApexClass")) {
+        this.warn(messages.getMessage("warn.testWithClassDisabled"));
+        continue;
+      }
       const manualItem = createManualRemovedItem(identifier, "ApexClass");
       if (!manualItem) {
         this.warn(messages.getMessage("warn.testWithClassInvalid", [identifier]));
@@ -89,6 +107,10 @@ export default class MetadataIntegrity extends SfCommand<MetadataIntegrityResult
     }
 
     for (const identifier of manualFields) {
+      if (!removedTypeSet.has("CustomField")) {
+        this.warn(messages.getMessage("warn.testWithFieldDisabled"));
+        continue;
+      }
       const manualItem = createManualRemovedItem(identifier, "CustomField");
       if (!manualItem) {
         this.warn(messages.getMessage("warn.testWithFieldInvalid", [identifier]));
@@ -121,7 +143,7 @@ export default class MetadataIntegrity extends SfCommand<MetadataIntegrityResult
     });
 
     const removedIndex = buildRemovedMetadataIndex(removedItems);
-    const surfacesToCheck = getSurfacesForRemovedTypes(new Set(removedItems.map((item) => item.type)));
+    const surfacesToCheck = this.getSurfacesToCheck(new Set(removedItems.map((item) => item.type)), integrityConfig);
     const shouldCheckAccessControl = this.shouldCheckAnySurface(surfacesToCheck, ["profile", "permissionSet"]);
     const shouldCheckSource = this.shouldCheckAnySurface(surfacesToCheck, ["apexSource", "lwc", "aura"]);
 
@@ -251,6 +273,34 @@ export default class MetadataIntegrity extends SfCommand<MetadataIntegrityResult
     this.error(error, { exit: 1 });
 
     return result;
+  }
+
+  private resolveIntegrityConfig(config: MetadataIntegrityConfig | undefined): Required<MetadataIntegrityConfig> {
+    const defaults = getDefaultIntegrityConfig();
+    return {
+      removedTypes: config?.removedTypes ?? defaults.removedTypes ?? [],
+      rules: config?.rules ?? defaults.rules ?? []
+    };
+  }
+
+  private getSurfacesToCheck(
+    removedTypes: Set<RemovedMetadataItem["type"]>,
+    integrityConfig: Required<MetadataIntegrityConfig>
+  ): Set<IntegrityReferenceSurface> {
+    if (integrityConfig.rules.length === 0) {
+      return getSurfacesForRemovedTypes(removedTypes);
+    }
+
+    const surfaces = new Set<IntegrityReferenceSurface>();
+    for (const rule of integrityConfig.rules) {
+      if (!removedTypes.has(rule.removedType)) {
+        continue;
+      }
+      for (const surface of rule.surfaces) {
+        surfaces.add(surface);
+      }
+    }
+    return surfaces;
   }
 
   private getRemovedMetadataItems(

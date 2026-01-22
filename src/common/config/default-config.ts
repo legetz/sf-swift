@@ -5,6 +5,11 @@
 
 import { FormattingRule, DEFAULT_FORMATTING_RULES } from "../xml/sorting-rules.js";
 import { ElementCleanupRule } from "../metadata/metadata-rules.js";
+import {
+  IntegrityReferenceSurface,
+  METADATA_INTEGRITY_RULES,
+  RemovedMetadataType
+} from "../metadata/metadata-integrity-rules.js";
 
 /**
  * Complete .swiftrc configuration structure
@@ -15,9 +20,20 @@ export interface MetadataAdjustConfig {
   alwaysExcluded: string[];
 }
 
+export interface MetadataIntegrityRuleConfig {
+  removedType: RemovedMetadataType;
+  surfaces: IntegrityReferenceSurface[];
+}
+
+export interface MetadataIntegrityConfig {
+  removedTypes?: RemovedMetadataType[];
+  rules?: MetadataIntegrityRuleConfig[];
+}
+
 export interface SwiftrcConfig {
   metadata: {
     adjust: MetadataAdjustConfig;
+    integrity?: MetadataIntegrityConfig;
   };
 }
 
@@ -48,6 +64,25 @@ export const DEFAULT_CLEANUP_RULES: { [metadataType: string]: ElementCleanupRule
   ]
 };
 
+export const DEFAULT_INTEGRITY_RULES: MetadataIntegrityRuleConfig[] = METADATA_INTEGRITY_RULES.map((rule) => ({
+  removedType: rule.removedType,
+  surfaces: [...rule.surfaces]
+}));
+
+export const DEFAULT_INTEGRITY_REMOVED_TYPES: RemovedMetadataType[] = Array.from(
+  new Set(DEFAULT_INTEGRITY_RULES.map((rule) => rule.removedType))
+);
+
+export function getDefaultIntegrityConfig(): MetadataIntegrityConfig {
+  return {
+    removedTypes: [...DEFAULT_INTEGRITY_REMOVED_TYPES],
+    rules: DEFAULT_INTEGRITY_RULES.map((rule) => ({
+      removedType: rule.removedType,
+      surfaces: [...rule.surfaces]
+    }))
+  };
+}
+
 /**
  * Get the complete default configuration
  */
@@ -58,7 +93,8 @@ export function getDefaultConfig(): SwiftrcConfig {
         formatting: [...DEFAULT_FORMATTING_RULES],
         cleanup: JSON.parse(JSON.stringify(DEFAULT_CLEANUP_RULES)),
         alwaysExcluded: [...DEFAULT_ALWAYS_EXCLUDED]
-      }
+      },
+      integrity: getDefaultIntegrityConfig()
     }
   };
 }
