@@ -55,11 +55,12 @@ export class SfMetadataAdjuster {
 
     // Apply configuration if provided
     if (config) {
-      setFormattingRules(config.formatting);
+      const adjustConfig = config.metadata.adjust;
+      setFormattingRules(adjustConfig.formatting);
       setMetadataConfig({
-        formattingPatterns: config.formatting.map((r) => r.filePattern),
-        alwaysExcluded: config.alwaysExcluded,
-        cleanupRules: config.cleanup
+        formattingPatterns: adjustConfig.formatting.map((r) => r.filePattern),
+        alwaysExcluded: adjustConfig.alwaysExcluded,
+        cleanupRules: adjustConfig.cleanup
       });
     }
 
@@ -125,7 +126,7 @@ export class SfMetadataAdjuster {
       const nonWhitelistedList = nonWhitelistedTypes.join(", ");
       throw new Error(
         `Invalid configuration: The following types have no formatting rules defined: ${nonWhitelistedList}.\n` +
-          `Add them to the 'formatting' section in .swiftrc or use --all flag.`
+          `Add them to the 'metadata.adjust.formatting' section in .swiftrc or use --all flag.`
       );
     }
   }

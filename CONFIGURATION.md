@@ -40,7 +40,7 @@ The `.swiftrc` file is a YAML configuration file placed in your project root. It
 **Key behaviors:**
 - **Built-in defaults**: If no `.swiftrc` exists, the tool uses built-in defaults (no file is created)
 - **Custom config path**: Use `--config path/to/file.yaml` to specify a custom configuration file
-- **Implicit whitelist**: Only files matching a `formatting[].filePattern` are processed
+- **Implicit whitelist**: Only files matching a `metadata.adjust.formatting[].filePattern` are processed
 - **No merging**: Your configuration is used exactly as-is (no merging with defaults)
 
 ## Getting Started
@@ -59,61 +59,63 @@ If a `.swiftrc` already exists, the command creates a dated backup named `.swift
 # .swiftrc - SF Swift Configuration File
 # Copy this file to your project root to customize formatting rules.
 
-formatting:
-  - filePattern: "field-meta.xml"
-    elementPriority:
-      - fullName
-  - filePattern: "permissionset-meta.xml"
-    elementPriority:
-      - label
-      - description
-      - editable
-      - readable
-  - filePattern: "profile-meta.xml"
-    elementPriority:
-      - editable
-      - readable
-  - filePattern: "listView-meta.xml"
-    elementPriority:
-      - fullName
-    unsortedArrays:
-      - filters
-  - filePattern: "validationRule-meta.xml"
-    elementPriority:
-      - fullName
-  - filePattern: "labels-meta.xml"
-    elementPriority:
-      - fullName
-  - filePattern: "globalValueSet-meta.xml"
-    elementPriority:
-      - fullName
-    unsortedArrays:
-      - customValue
-  - filePattern: "cls-meta.xml"
-  - filePattern: "object-meta.xml"
-  - filePattern: "settings-meta.xml"
-  - filePattern: "trigger-meta.xml"
-  - filePattern: "FileUploadAndDownloadSecurity.settings-meta.xml"
-    unsortedArrays:
-      - dispositions
+metadata:
+  adjust:
+    formatting:
+      - filePattern: "field-meta.xml"
+        elementPriority:
+          - fullName
+      - filePattern: "permissionset-meta.xml"
+        elementPriority:
+          - label
+          - description
+          - editable
+          - readable
+      - filePattern: "profile-meta.xml"
+        elementPriority:
+          - editable
+          - readable
+      - filePattern: "listView-meta.xml"
+        elementPriority:
+          - fullName
+        unsortedArrays:
+          - filters
+      - filePattern: "validationRule-meta.xml"
+        elementPriority:
+          - fullName
+      - filePattern: "labels-meta.xml"
+        elementPriority:
+          - fullName
+      - filePattern: "globalValueSet-meta.xml"
+        elementPriority:
+          - fullName
+        unsortedArrays:
+          - customValue
+      - filePattern: "cls-meta.xml"
+      - filePattern: "object-meta.xml"
+      - filePattern: "settings-meta.xml"
+      - filePattern: "trigger-meta.xml"
+      - filePattern: "FileUploadAndDownloadSecurity.settings-meta.xml"
+        unsortedArrays:
+          - dispositions
 
-# Optional: cleanup rules for removing default/empty values
-cleanup:
-  field-meta.xml:
-    - elementName: externalId
-      removeValues:
-        - "false"
-      conditions:
-        - elementName: type
-          values:
-            - Picklist
-    - elementName: description
-      removeValues:
-        - ""
+    # Optional: cleanup rules for removing default/empty values
+    cleanup:
+      field-meta.xml:
+        - elementName: externalId
+          removeValues:
+            - "false"
+          conditions:
+            - elementName: type
+              values:
+                - Picklist
+        - elementName: description
+          removeValues:
+            - ""
 
-# Files that are never processed
-alwaysExcluded:
-  - flow-meta.xml
+    # Files that are never processed
+    alwaysExcluded:
+      - flow-meta.xml
 ```
 
 You can also use a custom configuration file with the `--config` flag:
@@ -125,20 +127,22 @@ sf swift metadata adjust --config ./my-custom-config.yaml
 ## Configuration Structure
 
 ```yaml
-# Formatting rules for XML processing
-formatting:
-  - filePattern: "field-meta.xml"
-    elementPriority: [fullName]
+metadata:
+  adjust:
+    # Formatting rules for XML processing
+    formatting:
+      - filePattern: "field-meta.xml"
+        elementPriority: [fullName]
 
-# Cleanup rules for removing default/empty values
-cleanup:
-  field-meta.xml:
-    - elementName: description
-      removeValues: [""]
+    # Cleanup rules for removing default/empty values
+    cleanup:
+      field-meta.xml:
+        - elementName: description
+          removeValues: [""]
 
-# Files that are never processed
-alwaysExcluded:
-  - flow-meta.xml
+    # Files that are never processed
+    alwaysExcluded:
+      - flow-meta.xml
 ```
 
 ---
@@ -156,10 +160,12 @@ Each formatting rule targets a specific file pattern and can include four option
 #### Example Configuration
 
 ```yaml
-formatting:
-  - filePattern: "field-meta.xml"
-    elementPriority:
-      - fullName
+metadata:
+  adjust:
+    formatting:
+      - filePattern: "field-meta.xml"
+        elementPriority:
+          - fullName
 ```
 
 #### Before (original)
@@ -206,16 +212,18 @@ formatting:
 ##### Example Configuration
 
 ```yaml
-formatting:
-  - filePattern: "permissionset-meta.xml"
-    elementPriority:
-      - label
-      - description
-      - editable
-      - readable
-    condensedElements:
-      - fieldPermissions
-      - objectPermissions
+metadata:
+  adjust:
+    formatting:
+      - filePattern: "permissionset-meta.xml"
+        elementPriority:
+          - label
+          - description
+          - editable
+          - readable
+        condensedElements:
+          - fieldPermissions
+          - objectPermissions
 ```
 
 ##### Before (original)
@@ -266,11 +274,13 @@ formatting:
 #### Example Configuration
 
 ```yaml
-formatting:
-  - filePattern: "customLabels-meta.xml"
-    sortedByElements:
-      - fullName
-      - shortDescription
+metadata:
+  adjust:
+    formatting:
+      - filePattern: "customLabels-meta.xml"
+        sortedByElements:
+          - fullName
+          - shortDescription
 ```
 
 **Behavior**: Array elements will be sorted by the first key found in each element. In the example above, elements are sorted by `fullName` if present, otherwise by `shortDescription`.
@@ -288,12 +298,14 @@ formatting:
 #### Example Configuration
 
 ```yaml
-formatting:
-  - filePattern: "listView-meta.xml"
-    elementPriority:
-      - fullName
-    unsortedArrays:
-      - filters
+metadata:
+  adjust:
+    formatting:
+      - filePattern: "listView-meta.xml"
+        elementPriority:
+          - fullName
+        unsortedArrays:
+          - filters
 ```
 
 #### Before (original)
@@ -357,11 +369,13 @@ formatting:
 #### Example Configuration
 
 ```yaml
-formatting:
-  - filePattern: "permissionset-meta.xml"
-    condensedElements:
-      - fieldPermissions
-      - objectPermissions
+metadata:
+  adjust:
+    formatting:
+      - filePattern: "permissionset-meta.xml"
+        condensedElements:
+          - fieldPermissions
+          - objectPermissions
 ```
 
 #### Before (original)
@@ -415,27 +429,31 @@ formatting:
 
 **Structure**:
 ```yaml
-cleanup:
-  <filePattern>:
-    - elementName: <element to check>
-      removeValues: [<values that trigger removal>]
-      conditions:  # optional
-        - elementName: <sibling element>
-          values: [<required values>]
+metadata:
+  adjust:
+    cleanup:
+      <filePattern>:
+        - elementName: <element to check>
+          removeValues: [<values that trigger removal>]
+          conditions:  # optional
+            - elementName: <sibling element>
+              values: [<required values>]
 ```
 
 #### Example Configuration
 
 ```yaml
-cleanup:
-  field-meta.xml:
-    - elementName: externalId
-      removeValues: ["false"]
-      conditions:
-        - elementName: type
-          values: ["Picklist"]
-    - elementName: description
-      removeValues: [""]
+metadata:
+  adjust:
+    cleanup:
+      field-meta.xml:
+        - elementName: externalId
+          removeValues: ["false"]
+          conditions:
+            - elementName: type
+              values: ["Picklist"]
+        - elementName: description
+          removeValues: [""]
 ```
 
 **Behavior**:
@@ -449,8 +467,10 @@ cleanup:
 **Purpose**: Specify file types that should never be processed, regardless of other settings.
 
 ```yaml
-alwaysExcluded:
-  - flow-meta.xml
+metadata:
+  adjust:
+    alwaysExcluded:
+      - flow-meta.xml
 ```
 
 **Use case**: Flow metadata has complex ordering requirements that standard sorting would break.

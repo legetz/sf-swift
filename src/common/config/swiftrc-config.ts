@@ -7,10 +7,10 @@ import * as path from "path";
 import * as yaml from "js-yaml";
 import { FormattingRule } from "../xml/sorting-rules.js";
 import { ElementCleanupRule } from "../metadata/metadata-rules.js";
-import { getDefaultConfig, SwiftrcConfig } from "./default-config.js";
+import { getDefaultConfig, MetadataAdjustConfig, SwiftrcConfig } from "./default-config.js";
 
 // Re-export types and getDefaultConfig for convenience
-export { getDefaultConfig, SwiftrcConfig } from "./default-config.js";
+export { getDefaultConfig, MetadataAdjustConfig, SwiftrcConfig } from "./default-config.js";
 
 /**
  * Options for getConfig function
@@ -87,28 +87,51 @@ export function validateConfig(rawConfig: unknown): SwiftrcConfig {
 
   const config = rawConfig as Record<string, unknown>;
   const result: SwiftrcConfig = {
+    metadata: {
+      adjust: {
+        formatting: [],
+        cleanup: {},
+        alwaysExcluded: []
+      }
+    }
+  };
+
+  if (!config.metadata || typeof config.metadata !== "object") {
+    throw new Error(".swiftrc: 'metadata' section is required.");
+  }
+
+  const metadata = config.metadata as Record<string, unknown>;
+
+  if (!metadata.adjust || typeof metadata.adjust !== "object") {
+    throw new Error(".swiftrc: 'metadata.adjust' section is required.");
+  }
+
+  const adjust = metadata.adjust as Record<string, unknown>;
+  const adjustConfig: MetadataAdjustConfig = {
     formatting: [],
     cleanup: {},
     alwaysExcluded: []
   };
 
   // Validate formatting array (required)
-  if (config.formatting === undefined) {
-    throw new Error(".swiftrc: 'formatting' section is required. Add formatting rules for metadata types to process.");
+  if (adjust.formatting === undefined) {
+    throw new Error(
+      ".swiftrc: 'metadata.adjust.formatting' section is required. Add formatting rules for metadata types to process."
+    );
   }
 
-  if (!Array.isArray(config.formatting)) {
-    throw new Error(".swiftrc: 'formatting' must be an array of formatting rule objects.");
+  if (!Array.isArray(adjust.formatting)) {
+    throw new Error(".swiftrc: 'metadata.adjust.formatting' must be an array of formatting rule objects.");
   }
 
   const formattingRules: FormattingRule[] = [];
-  for (const [index, rule] of config.formatting.entries()) {
+  for (const [index, rule] of adjust.formatting.entries()) {
     if (!rule || typeof rule !== "object") {
-      throw new Error(`.swiftrc: formatting[${index}] must be an object.`);
+      throw new Error(`.swiftrc: metadata.adjust.formatting[${index}] must be an object.`);
     }
     const ruleObj = rule as Record<string, unknown>;
     if (!ruleObj.filePattern || typeof ruleObj.filePattern !== "string") {
-      throw new Error(`.swiftrc: formatting[${index}].filePattern is required and must be a string.`);
+      throw new Error(`.swiftrc: metadata.adjust.formatting[${index}].filePattern is required and must be a string.`);
     }
 
     const formattingRule: FormattingRule = {
@@ -117,62 +140,64 @@ export function validateConfig(rawConfig: unknown): SwiftrcConfig {
 
     if (ruleObj.elementPriority !== undefined) {
       if (!Array.isArray(ruleObj.elementPriority)) {
-        throw new Error(`.swiftrc: formatting[${index}].elementPriority must be an array of strings.`);
+        throw new Error(`.swiftrc: metadata.adjust.formatting[${index}].elementPriority must be an array of strings.`);
       }
       formattingRule.elementPriority = ruleObj.elementPriority as string[];
     }
 
     if (ruleObj.sortedByElements !== undefined) {
       if (!Array.isArray(ruleObj.sortedByElements)) {
-        throw new Error(`.swiftrc: formatting[${index}].sortedByElements must be an array of strings.`);
+        throw new Error(`.swiftrc: metadata.adjust.formatting[${index}].sortedByElements must be an array of strings.`);
       }
       formattingRule.sortedByElements = ruleObj.sortedByElements as string[];
     }
 
     if (ruleObj.unsortedArrays !== undefined) {
       if (!Array.isArray(ruleObj.unsortedArrays)) {
-        throw new Error(`.swiftrc: formatting[${index}].unsortedArrays must be an array of strings.`);
+        throw new Error(`.swiftrc: metadata.adjust.formatting[${index}].unsortedArrays must be an array of strings.`);
       }
       formattingRule.unsortedArrays = ruleObj.unsortedArrays as string[];
     }
 
     if (ruleObj.condensedElements !== undefined) {
       if (!Array.isArray(ruleObj.condensedElements)) {
-        throw new Error(`.swiftrc: formatting[${index}].condensedElements must be an array of strings.`);
+        throw new Error(
+          `.swiftrc: metadata.adjust.formatting[${index}].condensedElements must be an array of strings.`
+        );
       }
       formattingRule.condensedElements = ruleObj.condensedElements as string[];
     }
 
     formattingRules.push(formattingRule);
   }
-  result.formatting = formattingRules;
+  adjustConfig.formatting = formattingRules;
 
   // Validate cleanup rules (optional)
-  if (config.cleanup !== undefined) {
-    if (typeof config.cleanup !== "object" || config.cleanup === null) {
-      throw new Error(".swiftrc: 'cleanup' must be an object mapping metadata types to rule arrays.");
+  if (adjust.cleanup !== undefined) {
+    if (typeof adjust.cleanup !== "object" || adjust.cleanup === null) {
+      throw new Error(".swiftrc: 'metadata.adjust.cleanup' must be an object mapping metadata types to rule arrays.");
     }
     const cleanupRules: { [metadataType: string]: ElementCleanupRule[] } = {};
-    const rawCleanup = config.cleanup as Record<string, unknown>;
+    const rawCleanup = adjust.cleanup as Record<string, unknown>;
 
     for (const [metaType, rules] of Object.entries(rawCleanup)) {
       if (!Array.isArray(rules)) {
-        throw new Error(`.swiftrc: cleanup['${metaType}'] must be an array of cleanup rule objects.`);
+        throw new Error(`.swiftrc: metadata.adjust.cleanup['${metaType}'] must be an array of cleanup rule objects.`);
       }
       const typedRules: ElementCleanupRule[] = [];
       for (const [ruleIndex, rule] of rules.entries()) {
         if (!rule || typeof rule !== "object") {
-          throw new Error(`.swiftrc: cleanup['${metaType}'][${ruleIndex}] must be an object.`);
+          throw new Error(`.swiftrc: metadata.adjust.cleanup['${metaType}'][${ruleIndex}] must be an object.`);
         }
         const ruleObj = rule as Record<string, unknown>;
         if (!ruleObj.elementName || typeof ruleObj.elementName !== "string") {
           throw new Error(
-            `.swiftrc: cleanup['${metaType}'][${ruleIndex}].elementName is required and must be a string.`
+            `.swiftrc: metadata.adjust.cleanup['${metaType}'][${ruleIndex}].elementName is required and must be a string.`
           );
         }
         if (!Array.isArray(ruleObj.removeValues)) {
           throw new Error(
-            `.swiftrc: cleanup['${metaType}'][${ruleIndex}].removeValues is required and must be an array.`
+            `.swiftrc: metadata.adjust.cleanup['${metaType}'][${ruleIndex}].removeValues is required and must be an array.`
           );
         }
         const cleanupRule: ElementCleanupRule = {
@@ -181,7 +206,9 @@ export function validateConfig(rawConfig: unknown): SwiftrcConfig {
         };
         if (ruleObj.conditions !== undefined) {
           if (!Array.isArray(ruleObj.conditions)) {
-            throw new Error(`.swiftrc: cleanup['${metaType}'][${ruleIndex}].conditions must be an array.`);
+            throw new Error(
+              `.swiftrc: metadata.adjust.cleanup['${metaType}'][${ruleIndex}].conditions must be an array.`
+            );
           }
           cleanupRule.conditions = ruleObj.conditions as { elementName: string; values: string[] }[];
         }
@@ -189,19 +216,21 @@ export function validateConfig(rawConfig: unknown): SwiftrcConfig {
       }
       cleanupRules[metaType] = typedRules;
     }
-    result.cleanup = cleanupRules;
+    adjustConfig.cleanup = cleanupRules;
   }
 
   // Validate alwaysExcluded (optional)
-  if (config.alwaysExcluded !== undefined) {
-    if (!Array.isArray(config.alwaysExcluded)) {
-      throw new Error(".swiftrc: 'alwaysExcluded' must be an array of strings.");
+  if (adjust.alwaysExcluded !== undefined) {
+    if (!Array.isArray(adjust.alwaysExcluded)) {
+      throw new Error(".swiftrc: 'metadata.adjust.alwaysExcluded' must be an array of strings.");
     }
-    result.alwaysExcluded = config.alwaysExcluded as string[];
+    adjustConfig.alwaysExcluded = adjust.alwaysExcluded as string[];
   }
 
   // Validate no conflicts between formatting patterns and alwaysExcluded
-  validateNoPatternConflicts(result.formatting, result.alwaysExcluded);
+  validateNoPatternConflicts(adjustConfig.formatting, adjustConfig.alwaysExcluded);
+
+  result.metadata.adjust = adjustConfig;
 
   return result;
 }

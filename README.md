@@ -250,63 +250,65 @@ To customize the configuration, copy the sample config below to `.swiftrc` in yo
 ```yaml
 # .swiftrc - SF Swift Configuration File
 
-# Formatting rules define how XML elements should be sorted for each file type
-# Files are whitelisted implicitly by having a formatting rule
-formatting:
-  - filePattern: "field-meta.xml"
-    elementPriority:
-      - fullName
-  - filePattern: "listView-meta.xml"
-    elementPriority:
-      - fullName
-    unsortedArrays:
-      - filters
-  - filePattern: "permissionset-meta.xml"
-    elementPriority:
-      - label
-      - description
-      - editable
-      - readable
-  - filePattern: "profile-meta.xml"
-    elementPriority:
-      - editable
-      - readable
+metadata:
+   adjust:
+      # Formatting rules define how XML elements should be sorted for each file type
+      # Files are whitelisted implicitly by having a formatting rule
+      formatting:
+         - filePattern: "field-meta.xml"
+            elementPriority:
+               - fullName
+         - filePattern: "listView-meta.xml"
+            elementPriority:
+               - fullName
+            unsortedArrays:
+               - filters
+         - filePattern: "permissionset-meta.xml"
+            elementPriority:
+               - label
+               - description
+               - editable
+               - readable
+         - filePattern: "profile-meta.xml"
+            elementPriority:
+               - editable
+               - readable
 
-# Element cleanup rules for removing default/empty values
-cleanup:
-  field-meta.xml:
-    - elementName: externalId
-      removeValues:
-        - "false"
-      conditions:
-        - elementName: type
-          values:
-            - Picklist
-    - elementName: description
-      removeValues:
-        - ""
+      # Element cleanup rules for removing default/empty values
+      cleanup:
+         field-meta.xml:
+            - elementName: externalId
+               removeValues:
+                  - "false"
+               conditions:
+                  - elementName: type
+                     values:
+                        - Picklist
+            - elementName: description
+               removeValues:
+                  - ""
 
-# File types that are always excluded (cannot be processed)
-alwaysExcluded:
-  - flow-meta.xml
+      # File types that are always excluded (cannot be processed)
+      alwaysExcluded:
+         - flow-meta.xml
 ```
 
 #### Configuration options
 
 | Section | Description |
 |---------|-------------|
-| `formatting` | Array of rules defining how to sort XML elements per file type |
-| `formatting[].filePattern` | File suffix to match (e.g., `field-meta.xml`) |
-| `formatting[].elementPriority` | Keys that appear first within each object, in order |
-| `formatting[].sortedByElements` | Keys to use for sorting array elements (first match wins) |
-| `formatting[].unsortedArrays` | Array keys that preserve original order |
-| `formatting[].condensedElements` | Elements formatted on a single line for better diffs |
-| `cleanup` | Rules for removing default/empty values per metadata type |
-| `alwaysExcluded` | File types that can never be processed |
+| `metadata.adjust.formatting` | Array of rules defining how to sort XML elements per file type |
+| `metadata.adjust.formatting[].filePattern` | File suffix to match (e.g., `field-meta.xml`) |
+| `metadata.adjust.formatting[].elementPriority` | Keys that appear first within each object, in order |
+| `metadata.adjust.formatting[].sortedByElements` | Keys to use for sorting array elements (first match wins) |
+| `metadata.adjust.formatting[].unsortedArrays` | Array keys that preserve original order |
+| `metadata.adjust.formatting[].condensedElements` | Elements formatted on a single line for better diffs |
+| `metadata.adjust.cleanup` | Rules for removing default/empty values per metadata type |
+| `metadata.adjust.alwaysExcluded` | File types that can never be processed |
 
 #### Implicit whitelist
 
-Files are **whitelisted implicitly** by having a `formatting` rule. Only files matching a `formatting[].filePattern` will be processed (unless `--all` flag is used).
+Files are **whitelisted implicitly** by having a `metadata.adjust.formatting` rule. Only files matching a `metadata.adjust.formatting[].filePattern` will be processed (unless `--all` flag is used).
 
 #### No merging
 

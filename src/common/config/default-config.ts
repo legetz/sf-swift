@@ -9,10 +9,16 @@ import { ElementCleanupRule } from "../metadata/metadata-rules.js";
 /**
  * Complete .swiftrc configuration structure
  */
-export interface SwiftrcConfig {
+export interface MetadataAdjustConfig {
   formatting: FormattingRule[];
   cleanup: { [metadataType: string]: ElementCleanupRule[] };
   alwaysExcluded: string[];
+}
+
+export interface SwiftrcConfig {
+  metadata: {
+    adjust: MetadataAdjustConfig;
+  };
 }
 
 /**
@@ -47,8 +53,12 @@ export const DEFAULT_CLEANUP_RULES: { [metadataType: string]: ElementCleanupRule
  */
 export function getDefaultConfig(): SwiftrcConfig {
   return {
-    formatting: [...DEFAULT_FORMATTING_RULES],
-    cleanup: JSON.parse(JSON.stringify(DEFAULT_CLEANUP_RULES)),
-    alwaysExcluded: [...DEFAULT_ALWAYS_EXCLUDED]
+    metadata: {
+      adjust: {
+        formatting: [...DEFAULT_FORMATTING_RULES],
+        cleanup: JSON.parse(JSON.stringify(DEFAULT_CLEANUP_RULES)),
+        alwaysExcluded: [...DEFAULT_ALWAYS_EXCLUDED]
+      }
+    }
   };
 }

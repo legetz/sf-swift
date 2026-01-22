@@ -17,6 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 📚 **Configuration Guide**: New `CONFIGURATION.md` with detailed documentation for all formatting options including before/after examples
 - 🚀 **Quickstart Guide**: Added quickstart section to README
 
+### Changed
+- 🧱 **Swiftrc Layout**: Moved metadata adjust settings under `metadata.adjust` in `.swiftrc` so future commands can share the same config file.
+
 ## [1.0.18] - 2025-12-17
 
 ### Fixed
