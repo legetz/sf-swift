@@ -11,6 +11,9 @@ Path to the directory containing metadata files. Defaults to current directory i
 # flags.targetDir.description
 Directory containing Salesforce project files. Defaults to current directory. Alternative to using the path argument.
 
+# flags.config.description
+Path to custom configuration file. If not specified, looks for .swiftrc in project root. Uses built-in defaults if no config file is found.
+
 # flags.backup.description
 Create backup files before modifying metadata. Backups are disabled by default for CI/CD friendliness.
 
@@ -66,3 +69,6 @@ Process ALL metadata types with backup:
 
 Process ALL metadata types changed in last 10 commits:
 <%= config.bin %> <%= command.id %> --all --git-depth 10
+
+Use a custom configuration file:
+<%= config.bin %> <%= command.id %> --config ./my-config.yaml

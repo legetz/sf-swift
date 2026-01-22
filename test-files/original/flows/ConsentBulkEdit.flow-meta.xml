@@ -1,26 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Flow xmlns="http://soap.sforce.com/2006/04/metadata">
-    <actionCalls>
-        <name>Mass_update_consents</name>
-        <label>Mass update consents</label>
-        <locationX>176</locationX>
-        <locationY>350</locationY>
-        <actionName>MassUpdate</actionName>
-        <actionType>apex</actionType>
-        <connector>
-            <targetReference>Success</targetReference>
-        </connector>
-        <flowTransactionModel>Automatic</flowTransactionModel>
-        <inputParameters>
-            <name>externalId</name>
-            <value>
-                <elementReference>GetItem.ExternalId__c</elementReference>
-            </value>
-        </inputParameters>
-        <nameSegment>MassUpdate</nameSegment>
-        <offset>0</offset>
-        <storeOutputAutomatically>true</storeOutputAutomatically>
-    </actionCalls>
     <apiVersion>62.0</apiVersion>
     <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
     <choices>
@@ -61,29 +40,6 @@
         </value>
     </processMetadataValues>
     <processType>Flow</processType>
-    <recordLookups>
-        <name>GetItem</name>
-        <label>Get Account</label>
-        <locationX>176</locationX>
-        <locationY>242</locationY>
-        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
-        <connector>
-            <targetReference>Mass_update_consents</targetReference>
-        </connector>
-        <filterLogic>and</filterLogic>
-        <filters>
-            <field>ExternalId__c</field>
-            <operator>EqualTo</operator>
-            <value>
-                <elementReference>recordId.ExternalId__c</elementReference>
-            </value>
-        </filters>
-        <getFirstRecordOnly>true</getFirstRecordOnly>
-        <object>Account</object>
-        <queriedFields>Id</queriedFields>
-        <queriedFields>ExternalId__c</queriedFields>
-        <storeOutputAutomatically>true</storeOutputAutomatically>
-    </recordLookups>
     <screens>
         <name>Select_status</name>
         <label>Select status</label>
@@ -93,7 +49,7 @@
         <allowFinish>true</allowFinish>
         <allowPause>false</allowPause>
         <connector>
-            <targetReference>GetItem</targetReference>
+            <targetReference>Success</targetReference>
         </connector>
         <fields>
             <name>ConsentTitle</name>

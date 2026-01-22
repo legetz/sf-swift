@@ -4,11 +4,14 @@ import { sortXmlElements } from "./common/xml/sorter.js";
 import { createFileBackup } from "./common/helper/backup.js";
 import { hashString } from "./common/helper/string.js";
 import {
-  ALLOWED_METADATA_TYPES,
-  DEFAULT_EXCLUSIONS,
-  ALWAYS_EXCLUDED,
-  ELEMENT_CLEANUP_RULES
+  getAllowedFilePatterns,
+  getAlwaysExcluded,
+  getCleanupRules,
+  setMetadataConfig,
+  resetMetadataConfig
 } from "./common/metadata/metadata-rules.js";
+import { setFormattingRules, resetFormattingRules } from "./common/xml/sorting-rules.js";
+import { SwiftrcConfig } from "./common/config/swiftrc-config.js";
 import { parseMetadataXml, prefixXmlEntities, buildMetadataXml, XmlObject } from "./common/xml/xml-helpers.js";
 
 interface ProcessingStats {
@@ -26,6 +29,7 @@ interface SfMetadataAdjusterOptions {
   includeTypes?: string[];
   excludeTypes?: string[];
   allowAll?: boolean;
+  config?: SwiftrcConfig;
 }
 
 export class SfMetadataAdjuster {
@@ -47,7 +51,17 @@ export class SfMetadataAdjuster {
 
   constructor(folderPath: string, options: SfMetadataAdjusterOptions = {}) {
     this.folderPath = folderPath;
-    const { includeTypes = [], excludeTypes = [], allowAll = false, silent } = options;
+    const { includeTypes = [], excludeTypes = [], allowAll = false, silent, config } = options;
+
+    // Apply configuration if provided
+    if (config) {
+      setFormattingRules(config.formatting);
+      setMetadataConfig({
+        formattingPatterns: config.formatting.map((r) => r.filePattern),
+        alwaysExcluded: config.alwaysExcluded,
+        cleanupRules: config.cleanup
+      });
+    }
 
     this.allowAll = allowAll;
     this.isSilent = silent ?? process.env.NODE_ENV === "test";
@@ -60,23 +74,19 @@ export class SfMetadataAdjuster {
       return t;
     });
 
-    // If no exclude types specified, use defaults; otherwise use the provided exclusions
-    if (excludeTypes.length === 0) {
-      this.excludeTypes = [...DEFAULT_EXCLUSIONS];
-    } else {
-      this.excludeTypes = excludeTypes.map((t) => {
-        // Normalize type names - ensure they end with -meta.xml
-        if (!t.endsWith("-meta.xml")) {
-          return `${t}-meta.xml`;
-        }
-        return t;
-      });
-    }
+    // Normalize exclude types
+    this.excludeTypes = excludeTypes.map((t) => {
+      // Normalize type names - ensure they end with -meta.xml
+      if (!t.endsWith("-meta.xml")) {
+        return `${t}-meta.xml`;
+      }
+      return t;
+    });
 
     // Validate that include types don't conflict with always-excluded types
     this.validateIncludeTypes();
 
-    // Validate that include types are whitelisted (unless --all is specified)
+    // Validate that include types are in formatting rules (unless --all is specified)
     this.validateWhitelistedTypes();
   }
 
@@ -92,7 +102,7 @@ export class SfMetadataAdjuster {
   }
 
   /**
-   * Validate that include types are whitelisted when --all is not specified
+   * Validate that include types have formatting rules when --all is not specified
    */
   private validateWhitelistedTypes(): void {
     // Skip validation if --all flag is used or no include types specified
@@ -100,23 +110,22 @@ export class SfMetadataAdjuster {
       return;
     }
 
+    const allowedPatterns = getAllowedFilePatterns();
     const nonWhitelistedTypes: string[] = [];
 
     for (const includeType of this.includeTypes) {
-      const isWhitelisted = ALLOWED_METADATA_TYPES.some((allowedType) => includeType.endsWith(allowedType));
+      const isAllowed = allowedPatterns.some((pattern) => includeType.endsWith(pattern));
 
-      if (!isWhitelisted) {
+      if (!isAllowed) {
         nonWhitelistedTypes.push(includeType);
       }
     }
 
     if (nonWhitelistedTypes.length > 0) {
       const nonWhitelistedList = nonWhitelistedTypes.join(", ");
-      const allowedList = ALLOWED_METADATA_TYPES.join(", ");
       throw new Error(
-        `Invalid configuration: The following types are not in the allowed whitelist: ${nonWhitelistedList}.\n` +
-          `Allowed types: ${allowedList}\n` +
-          `Use --all flag to process all metadata types without whitelist restrictions.`
+        `Invalid configuration: The following types have no formatting rules defined: ${nonWhitelistedList}.\n` +
+          `Add them to the 'formatting' section in .swiftrc or use --all flag.`
       );
     }
   }
@@ -129,10 +138,11 @@ export class SfMetadataAdjuster {
       return; // No include types specified, nothing to validate
     }
 
+    const alwaysExcluded = getAlwaysExcluded();
     const conflictingTypes: string[] = [];
 
     for (const includeType of this.includeTypes) {
-      for (const alwaysExcludedType of ALWAYS_EXCLUDED) {
+      for (const alwaysExcludedType of alwaysExcluded) {
         if (includeType.endsWith(alwaysExcludedType)) {
           conflictingTypes.push(includeType);
           break;
@@ -142,7 +152,7 @@ export class SfMetadataAdjuster {
 
     if (conflictingTypes.length > 0) {
       const conflictList = conflictingTypes.join(", ");
-      const alwaysExcludedList = ALWAYS_EXCLUDED.join(", ");
+      const alwaysExcludedList = alwaysExcluded.join(", ");
       throw new Error(
         `Invalid configuration: The following types cannot be included as they require special handling: ${conflictList}. ` +
           `Always excluded types: ${alwaysExcludedList}`
@@ -157,17 +167,18 @@ export class SfMetadataAdjuster {
     const fileName = path.basename(filePath);
 
     // Always exclude types that require special handling
-    const isAlwaysExcluded = ALWAYS_EXCLUDED.some((excludePattern) => fileName.endsWith(excludePattern));
+    const alwaysExcluded = getAlwaysExcluded();
+    const isAlwaysExcluded = alwaysExcluded.some((excludePattern) => fileName.endsWith(excludePattern));
     if (isAlwaysExcluded) {
       return true;
     }
 
-    // Check regular exclusion list
+    // Check user-specified exclusion list
     return this.excludeTypes.some((excludePattern) => fileName.endsWith(excludePattern));
   }
 
   /**
-   * Check if a file matches the include list (if specified)
+   * Check if a file matches the include list or formatting patterns
    */
   private shouldIncludeFile(filePath: string): boolean {
     const fileName = path.basename(filePath);
@@ -177,9 +188,10 @@ export class SfMetadataAdjuster {
       return this.includeTypes.some((includePattern) => fileName.endsWith(includePattern));
     }
 
-    // If no include types specified and --all is NOT used, check against whitelist
+    // If no include types specified and --all is NOT used, check against formatting patterns
     if (!this.allowAll) {
-      return ALLOWED_METADATA_TYPES.some((allowedType) => fileName.endsWith(allowedType));
+      const allowedPatterns = getAllowedFilePatterns();
+      return allowedPatterns.some((pattern) => fileName.endsWith(pattern));
     }
 
     // If --all is used and no specific includes, accept all files (except excludes)
@@ -267,13 +279,14 @@ export class SfMetadataAdjuster {
    */
   private cleanupElements(xmlObject: XmlObject, filePath: string): XmlObject {
     // Find matching metadata type rule
-    const metadataType = Object.keys(ELEMENT_CLEANUP_RULES).find((type) => filePath.endsWith(type));
+    const cleanupRules = getCleanupRules();
+    const metadataType = Object.keys(cleanupRules).find((type) => filePath.endsWith(type));
 
     if (!metadataType) {
       return xmlObject; // No cleanup rules for this type
     }
 
-    const rules = ELEMENT_CLEANUP_RULES[metadataType];
+    const rules = cleanupRules[metadataType];
 
     // Apply cleanup rules for each element
     for (const rule of rules) {
@@ -349,8 +362,8 @@ export class SfMetadataAdjuster {
       // Sort the elements using imported sorter with file path for rule-based sorting
       const sortedObject = sortXmlElements(cleanedObject, undefined, filePath);
 
-      // Build the XML
-      const sortedXml = buildMetadataXml(sortedObject, originalXml);
+      // Build the XML with file path for condensed format rules
+      const sortedXml = buildMetadataXml(sortedObject, originalXml, filePath);
 
       // Make sha256 hash of original and sorted XML
       const originalHash = hashString(originalXml);
@@ -475,6 +488,10 @@ export class SfMetadataAdjuster {
     } catch (error) {
       this.error("❌ Error processing metadata files:", error);
       process.exit(1);
+    } finally {
+      // Reset configuration to defaults after processing
+      resetFormattingRules();
+      resetMetadataConfig();
     }
   }
 

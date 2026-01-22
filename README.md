@@ -2,6 +2,26 @@
 
 A fast and powerful Salesforce CLI plugin with utilities for metadata formatting, sorting, integrity checks and more 🎯
 
+## Quickstart
+
+### 1. Install
+
+```bash
+sf plugins install sf-swift
+```
+
+### 2. Format your metadata
+
+```bash
+# Format all metadata in current directory
+sf swift metadata adjust
+
+# Format only files changed in last 5 commits
+sf swift metadata adjust --git-depth 5
+```
+
+---
+
 ## Commands
 
 - [`sf swift metadata adjust`](#command-sf-swift-metadata-adjust)
@@ -89,6 +109,7 @@ sf swift metadata adjust --help
 | Flag | Short | Description | Default |
 |------|-------|-------------|---------|
 | `--target-dir` | `-d` | Target directory to process | `.` (current) |
+| `--config` | `-c` | Path to custom config file | `.swiftrc` or built-in |
 | `--git-depth` | `-g` | Process only N commits | `0` (all files) |
 | `--include` | `-i` | Only process specific types | All whitelisted types |
 | `--exclude` | `-e` | Exclude specific types | `reportType,flexipage,layout` |
@@ -208,6 +229,99 @@ sf swift metadata adjust --all --backup
 - Use `--backup` flag for safety
 - Review changes carefully before committing
 - Check that metadata still deploys correctly
+
+### Configuration file (`.swiftrc`)
+
+The adjust command supports a YAML configuration file (`.swiftrc`) in your project root. This allows you to customize formatting rules, cleanup rules, and exclusions without command-line flags.
+
+#### Default behavior
+
+- If no `.swiftrc` file exists, the tool uses **built-in defaults**
+- If a `.swiftrc` file is found in your project root, it is loaded and used
+- Use `--config path/to/file.yaml` to specify a custom configuration file
+
+To customize the configuration, copy the sample config below to `.swiftrc` in your project root.
+
+#### Configuration structure
+
+```yaml
+# .swiftrc - SF Swift Configuration File
+
+# Formatting rules define how XML elements should be sorted for each file type
+# Files are whitelisted implicitly by having a formatting rule
+formatting:
+  - filePattern: "field-meta.xml"
+    elementPriority:
+      - fullName
+  - filePattern: "listView-meta.xml"
+    elementPriority:
+      - fullName
+    unsortedArrays:
+      - filters
+  - filePattern: "permissionset-meta.xml"
+    elementPriority:
+      - label
+      - description
+      - editable
+      - readable
+  - filePattern: "profile-meta.xml"
+    elementPriority:
+      - editable
+      - readable
+
+# Element cleanup rules for removing default/empty values
+cleanup:
+  field-meta.xml:
+    - elementName: externalId
+      removeValues:
+        - "false"
+      conditions:
+        - elementName: type
+          values:
+            - Picklist
+    - elementName: description
+      removeValues:
+        - ""
+
+# File types that are always excluded (cannot be processed)
+alwaysExcluded:
+  - flow-meta.xml
+```
+
+#### Configuration options
+
+| Section | Description |
+|---------|-------------|
+| `formatting` | Array of rules defining how to sort XML elements per file type |
+| `formatting[].filePattern` | File suffix to match (e.g., `field-meta.xml`) |
+| `formatting[].elementPriority` | Keys that appear first within each object, in order |
+| `formatting[].sortedByElements` | Keys to use for sorting array elements (first match wins) |
+| `formatting[].unsortedArrays` | Array keys that preserve original order |
+| `formatting[].condensedElements` | Elements formatted on a single line for better diffs |
+| `cleanup` | Rules for removing default/empty values per metadata type |
+| `alwaysExcluded` | File types that can never be processed |
+
+#### Implicit whitelist
+
+Files are **whitelisted implicitly** by having a `formatting` rule. Only files matching a `formatting[].filePattern` will be processed (unless `--all` flag is used).
+
+#### No merging
+
+User configuration is used exactly as-is with **no merging** with defaults. This ensures predictable behavior—what you configure is exactly what you get.
+
+#### Full configuration reference
+
+For detailed documentation with before/after examples for each formatting option, see [CONFIGURATION.md](./CONFIGURATION.md).
+
+#### Project root detection
+
+The `.swiftrc` file is searched for by walking up the directory tree from the target directory, checking for:
+
+1. `.swiftrc` file (highest priority)
+2. `.git` directory
+3. `package.json` file
+
+This allows the config to work from any subdirectory in your project.
 
 ### Performance tips
 

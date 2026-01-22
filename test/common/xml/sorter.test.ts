@@ -1,10 +1,10 @@
 import { expect } from "chai";
-import { sortXmlElements, sortClassAccesses, sortArrayElements } from "../../../src/common/xml/sorter.js";
+import { sortXmlElements, sortArrayElements } from "../../../src/common/xml/sorter.js";
 import { sortKeysWithPriority } from "../../../src/common/xml/sorting-rules.js";
 
 describe("common/xml/sorter", () => {
-  describe("sortClassAccesses", () => {
-    it("should sort class accesses case-sensitively (uppercase before lowercase)", () => {
+  describe("sortArrayElements", () => {
+    it("should sort classAccesses by apexClass case-sensitively (uppercase before lowercase)", () => {
       const input = [
         { apexClass: ["TestClass"] },
         { apexClass: ["testClass"] },
@@ -12,7 +12,7 @@ describe("common/xml/sorter", () => {
         { apexClass: ["anotherClass"] }
       ];
 
-      const result = sortClassAccesses(input);
+      const result = sortArrayElements(input, "classAccesses");
 
       expect(result[0].apexClass[0]).to.equal("AnotherClass");
       expect(result[1].apexClass[0]).to.equal("TestClass");
@@ -23,15 +23,13 @@ describe("common/xml/sorter", () => {
     it("should handle empty apexClass values", () => {
       const input = [{ apexClass: ["ZClass"] }, { apexClass: [""] }, { apexClass: ["AClass"] }];
 
-      const result = sortClassAccesses(input);
+      const result = sortArrayElements(input, "classAccesses");
 
       expect(result[0].apexClass[0]).to.equal("");
       expect(result[1].apexClass[0]).to.equal("AClass");
       expect(result[2].apexClass[0]).to.equal("ZClass");
     });
-  });
 
-  describe("sortArrayElements", () => {
     it("should sort fieldPermissions case-sensitively", () => {
       const input = [
         { field: ["Test.Example__c"] },
@@ -304,12 +302,12 @@ describe("common/xml/sorter", () => {
     });
   });
 
-  describe("Priority key sorting", () => {
+  describe("Element priority sorting", () => {
     it("should sort keys with priority keys first", () => {
       const keys = ["type", "fullName", "label", "description", "externalId"];
-      const priorityKeys = ["fullName", "label"];
+      const elementPriority = ["fullName", "label"];
 
-      const result = sortKeysWithPriority(keys, priorityKeys);
+      const result = sortKeysWithPriority(keys, elementPriority);
 
       expect(result[0]).to.equal("fullName");
       expect(result[1]).to.equal("label");
@@ -320,9 +318,9 @@ describe("common/xml/sorter", () => {
 
     it("should handle missing priority keys", () => {
       const keys = ["type", "label", "description", "externalId"];
-      const priorityKeys = ["fullName", "label"];
+      const elementPriority = ["fullName", "label"];
 
-      const result = sortKeysWithPriority(keys, priorityKeys);
+      const result = sortKeysWithPriority(keys, elementPriority);
 
       expect(result[0]).to.equal("label");
       expect(result[1]).to.equal("description");
@@ -358,6 +356,27 @@ describe("common/xml/sorter", () => {
       expect(keys[2]).to.equal("externalId");
       expect(keys[3]).to.equal("label");
       expect(keys[4]).to.equal("type");
+    });
+
+    it("should sort arrays by elementPriority value", () => {
+      const input = {
+        labels: [
+          { fullName: ["Zebra"], shortDescription: ["Zebra Label"], value: ["Z"] },
+          { fullName: ["Apple"], shortDescription: ["Apple Label"], value: ["A"] },
+          { fullName: ["Banana"], shortDescription: ["Banana Label"], value: ["B"] }
+        ]
+      };
+
+      // labels-meta.xml has elementPriority: ["fullName"]
+      const result = sortXmlElements(input, undefined, "CustomLabels.labels-meta.xml");
+
+      // Labels should be sorted by fullName (auto-detected from element priority)
+      expect(result.labels[0].fullName[0]).to.equal("Apple");
+      expect(result.labels[1].fullName[0]).to.equal("Banana");
+      expect(result.labels[2].fullName[0]).to.equal("Zebra");
+
+      // And fullName should be first key in each label
+      expect(Object.keys(result.labels[0])[0]).to.equal("fullName");
     });
   });
 });

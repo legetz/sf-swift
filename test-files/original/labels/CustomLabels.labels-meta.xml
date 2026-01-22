@@ -24,4 +24,28 @@
         <shortDescription>Test</shortDescription>
         <value>ABC</value>
     </labels>
+    <labels>
+        <categories>Consent</categories>
+        <fullName>SomeTitle</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Consent Title</shortDescription>
+        <value>Consent Management</value>
+    </labels>
+    <labels>
+        <categories>Consent</categories>
+        <fullName>OptIn</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Opt In</shortDescription>
+        <value>Opt In</value>
+    </labels>
+    <labels>
+        <categories>Consent</categories>
+        <fullName>OptOut</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Opt Out</shortDescription>
+        <value>Opt Out</value>
+    </labels>
 </CustomLabels>
