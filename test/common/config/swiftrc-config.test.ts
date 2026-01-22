@@ -3,8 +3,10 @@ import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
 import {
+  createDefaultSwiftrc,
   findProjectRoot,
   getDefaultConfig,
+  getSwiftrcBackupFilename,
   validateConfig,
   loadSwiftrcConfig,
   getConfig
@@ -257,6 +259,46 @@ formatting:
       fs.writeFileSync(path.join(tempDir, ".swiftrc"), "invalid: yaml: content: [");
 
       expect(() => loadSwiftrcConfig(tempDir)).to.throw(/Invalid YAML syntax/);
+    });
+  });
+
+  describe("createDefaultSwiftrc", () => {
+    it("should create .swiftrc with default configuration", () => {
+      const result = createDefaultSwiftrc(tempDir, { date: new Date(2026, 0, 22) });
+      const configPath = path.join(tempDir, ".swiftrc");
+
+      expect(result.configPath).to.equal(configPath);
+      expect(fs.existsSync(configPath)).to.equal(true);
+
+      const content = fs.readFileSync(configPath, "utf8");
+      expect(content).to.include("formatting:");
+      expect(content).to.include("alwaysExcluded:");
+    });
+
+    it("should backup existing .swiftrc before overwriting", () => {
+      const originalContent = "formatting: []\n";
+      fs.writeFileSync(path.join(tempDir, ".swiftrc"), originalContent);
+
+      const date = new Date(2026, 0, 22);
+      const result = createDefaultSwiftrc(tempDir, { date });
+      const backupName = getSwiftrcBackupFilename(date);
+      const backupPath = path.join(tempDir, backupName);
+
+      expect(result.backupPath).to.equal(backupPath);
+      expect(fs.existsSync(backupPath)).to.equal(true);
+      expect(fs.readFileSync(backupPath, "utf8")).to.equal(originalContent);
+    });
+
+    it("should throw when backup already exists and leave .swiftrc unchanged", () => {
+      const originalContent = "formatting: []\n";
+      fs.writeFileSync(path.join(tempDir, ".swiftrc"), originalContent);
+
+      const date = new Date(2026, 0, 22);
+      const backupName = getSwiftrcBackupFilename(date);
+      fs.writeFileSync(path.join(tempDir, backupName), "existing backup");
+
+      expect(() => createDefaultSwiftrc(tempDir, { date })).to.throw(/Backup already exists/);
+      expect(fs.readFileSync(path.join(tempDir, ".swiftrc"), "utf8")).to.equal(originalContent);
     });
   });
 

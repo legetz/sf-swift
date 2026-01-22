@@ -47,6 +47,14 @@ The `.swiftrc` file is a YAML configuration file placed in your project root. It
 
 To customize the configuration, create a `.swiftrc` file in your project root. Copy this sample configuration:
 
+You can also generate the default configuration automatically:
+
+```bash
+sf swift config init
+```
+
+If a `.swiftrc` already exists, the command creates a dated backup named `.swiftrc.backup.YYYYMMDD` before writing the new file.
+
 ```yaml
 # .swiftrc - SF Swift Configuration File
 # Copy this file to your project root to customize formatting rules.

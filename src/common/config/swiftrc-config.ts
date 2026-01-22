@@ -277,3 +277,43 @@ export function getConfig(targetDir: string, options: GetConfigOptions = {}): Sw
   // No config exists - use built-in defaults (no file creation)
   return getDefaultConfig();
 }
+
+export function formatDateAsYYYYMMDD(date: Date): string {
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, "0");
+  const day = `${date.getDate()}`.padStart(2, "0");
+  return `${year}${month}${day}`;
+}
+
+export function getSwiftrcBackupFilename(date: Date = new Date()): string {
+  return `${CONFIG_FILENAME}.backup.${formatDateAsYYYYMMDD(date)}`;
+}
+
+export function serializeSwiftrcConfig(config: SwiftrcConfig): string {
+  const content = yaml.dump(config, { lineWidth: -1, noRefs: true });
+  return content.endsWith("\n") ? content : `${content}\n`;
+}
+
+export function createDefaultSwiftrc(
+  targetDir: string,
+  options: { date?: Date } = {}
+): { configPath: string; backupPath?: string } {
+  const configPath = path.join(targetDir, CONFIG_FILENAME);
+  let backupPath: string | undefined;
+
+  if (fs.existsSync(configPath)) {
+    const backupName = getSwiftrcBackupFilename(options.date ?? new Date());
+    backupPath = path.join(targetDir, backupName);
+
+    if (fs.existsSync(backupPath)) {
+      throw new Error(`Backup already exists: ${backupName}`);
+    }
+
+    fs.copyFileSync(configPath, backupPath);
+  }
+
+  const content = serializeSwiftrcConfig(getDefaultConfig());
+  fs.writeFileSync(configPath, content, "utf8");
+
+  return { configPath, backupPath };
+}

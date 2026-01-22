@@ -13,7 +13,10 @@ sf plugins install sf-swift
 ### 2. Format your metadata
 
 ```bash
-# Format all metadata in current directory
+# Optional: Init .swiftrc config to have full control for metadata adjustment rules inside your SF project
+sf swift config init
+
+# Format all metadata in current SF project directory (uses your .swiftrc or built-in defaults)
 sf swift metadata adjust
 
 # Format only files changed in last 5 commits
@@ -23,7 +26,7 @@ sf swift metadata adjust --git-depth 5
 ---
 
 ## Commands
-
+- [`sf swift config init`](#command-sf-swift-config-init)
 - [`sf swift metadata adjust`](#command-sf-swift-metadata-adjust)
 - [`sf swift metadata integrity`](#command-sf-swift-metadata-integrity)
 - [`sf swift detect git conflicts`](#command-sf-swift-detect-git-conflicts)
@@ -329,6 +332,21 @@ This allows the config to work from any subdirectory in your project.
 2. **Backup disabled by default**: Already optimized for CI/CD
 3. **Run before commit**: Catch issues early with git-depth 1
 4. **Ignore backup folders**: Add `.backup-*` to `.gitignore` (when using --backup)
+
+## Command: `sf swift config init`
+
+Creates a `.swiftrc` file in the current directory using the built-in default configuration. If a `.swiftrc` already exists, it is backed up as `.swiftrc.backup.YYYYMMDD` before being overwritten.
+
+### Quick start
+
+```bash
+# Create a .swiftrc file in the current directory
+sf swift config init
+```
+
+### Output
+
+When a backup is created, the command prints the backup filename before confirming the new file was written.
 
 ## Command: `sf swift detect git conflicts`
 

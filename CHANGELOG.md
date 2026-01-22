@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- 🧰 **Config Init Command**: Added `sf swift config init` to generate a default `.swiftrc` and create dated backups when one already exists.
 - 🔧 **Formatting Configuration Options**: New `.swiftrc` configuration options for fine-grained control over XML formatting:
   - `elementPriority` - specify which keys appear first within each object (applies recursively at all levels)
   - `sortedByElements` - specify which child keys to use for sorting array elements
