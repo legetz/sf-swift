@@ -170,7 +170,7 @@ export default class MetadataAdjust extends SfCommand<void> {
           // Calculate and display elapsed time even for early return
           const endTime = Date.now();
           const elapsedSeconds = ((endTime - startTime) / 1000).toFixed(2);
-          console.log(`\n⏱️  Completed in ${elapsedSeconds} seconds`);
+          console.log(`⏱️ Completed in ${elapsedSeconds} seconds`);
           return;
         }
 
@@ -183,7 +183,7 @@ export default class MetadataAdjust extends SfCommand<void> {
       // Calculate and display elapsed time
       const endTime = Date.now();
       const elapsedSeconds = ((endTime - startTime) / 1000).toFixed(2);
-      console.log(`\n⏱️  Completed in ${elapsedSeconds} seconds`);
+      console.log(`⏱️ Completed in ${elapsedSeconds} seconds`);
     } catch (error) {
       console.error("❌ Error:", error instanceof Error ? error.message : String(error));
       process.exit(1);
