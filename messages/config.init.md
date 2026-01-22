@@ -5,7 +5,7 @@ Create a .swiftrc configuration file in the current directory using SF Swift def
 📁 Backup created: %s
 
 # output.created
-✅ Created %s using default configuration.
+🪄 Successfully created config file %s using built-in defaults. Adjust config and commit it to GIT 🤓
 
 # examples
 - Create a .swiftrc file in the current directory:

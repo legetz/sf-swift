@@ -2,7 +2,7 @@ import * as path from "path";
 import * as fs from "fs";
 import { execSync } from "child_process";
 import { SfMetadataAdjuster } from "../../../sf-metadata-adjuster.js";
-import { getConfig } from "../../../common/config/swiftrc-config.js";
+import { findProjectRoot, getConfig } from "../../../common/config/swiftrc-config.js";
 import { SfCommand, Flags } from "@salesforce/sf-plugins-core";
 import { Messages } from "@salesforce/core";
 import { Args } from "@oclif/core";
@@ -126,19 +126,28 @@ export default class MetadataAdjust extends SfCommand<void> {
     const includeTypes = flags.include || [];
     const excludeTypes = flags.exclude || [];
 
+    const hasConfigFlag = Boolean(flags.config);
+    const projectRoot = findProjectRoot(targetDir);
+    const hasSwiftrcFile = fs.existsSync(path.join(projectRoot, ".swiftrc"));
+    const hasIncludeExclude = includeTypes.length > 0 || excludeTypes.length > 0;
+
+    if (hasIncludeExclude && (hasConfigFlag || hasSwiftrcFile)) {
+      console.log(`⚠️ ${messages.getMessage("output.warning.configOverrides")}`);
+    }
+
     // Display include types if specified
     if (includeTypes.length > 0) {
-      console.log(`\n🎯 Including only: ${includeTypes.join(", ")}`);
+      console.log(`🎯 Including only: ${includeTypes.join(", ")}`);
     }
 
     // Display exclude types if specified
     if (excludeTypes.length > 0) {
-      console.log(`\n🚫 Excluding: ${excludeTypes.join(", ")}`);
+      console.log(`🚫 Excluding: ${excludeTypes.join(", ")}`);
     }
 
     // Display --all flag status
     if (flags.all) {
-      console.log(`\n🌐 Processing ALL metadata types (whitelist disabled)`);
+      console.log(`🌐 Processing ALL metadata types (whitelist disabled)`);
     }
 
     try {

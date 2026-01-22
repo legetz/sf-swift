@@ -29,6 +29,9 @@ Exclude specific metadata types from processing. Accepts comma-separated values.
 # flags.all.description
 Process ALL metadata types without whitelist restrictions. By default, only safe metadata types (profiles, permissionsets, etc.) are processed. Use this flag to override the whitelist and process any metadata type.
 
+# output.warning.configOverrides
+Detected both configuration file and include/exclude flags given. Prefer using only config file to avoid confusion.
+
 # examples
 - Adjust metadata files within current folder: 
 <%= config.bin %> <%= command.id %>
