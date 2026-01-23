@@ -1,0 +1,82 @@
+metadata:
+  adjust:
+    formatting:
+      - filePattern: field-meta.xml
+        elementPriority:
+          - fullName
+      - filePattern: FileUploadAndDownloadSecurity.settings-meta.xml
+        unsortedArrays:
+          - dispositions
+      - filePattern: validationRule-meta.xml
+        elementPriority:
+          - fullName
+      - filePattern: listView-meta.xml
+        elementPriority:
+          - fullName
+        unsortedArrays:
+          - filters
+      - filePattern: labels-meta.xml
+        elementPriority:
+          - fullName
+      - filePattern: globalValueSet-meta.xml
+        elementPriority:
+          - fullName
+        unsortedArrays:
+          - customValue
+      - filePattern: permissionset-meta.xml
+        elementPriority:
+          - label
+          - description
+          - editable
+          - readable
+      - filePattern: profile-meta.xml
+        elementPriority:
+          - editable
+          - readable
+      - filePattern: cls-meta.xml
+      - filePattern: object-meta.xml
+      - filePattern: settings-meta.xml
+      - filePattern: trigger-meta.xml
+    cleanup:
+      field-meta.xml:
+        - elementName: externalId
+          removeValues:
+            - 'false'
+          conditions:
+            - elementName: type
+              values:
+                - Picklist
+        - elementName: description
+          removeValues:
+            - ''
+    alwaysExcluded:
+      - flow-meta.xml
+  integrity:
+    removedTypes:
+      - ApexClass
+      - CustomField
+      - VisualforcePage
+    rules:
+      - removedType: ApexClass
+        surfaces:
+          - profile
+          - permissionSet
+          - lwc
+          - aura
+          - flow
+          - apexSource
+      - removedType: CustomField
+        surfaces:
+          - profile
+          - permissionSet
+          - flow
+          - formulaField
+          - layout
+          - validationRule
+          - fieldSet
+          - recordType
+          - compactLayout
+      - removedType: VisualforcePage
+        surfaces:
+          - profile
+          - permissionSet
