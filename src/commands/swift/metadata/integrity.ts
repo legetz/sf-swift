@@ -150,7 +150,7 @@ export default class MetadataIntegrity extends SfCommand<MetadataIntegrityResult
     const issues: IntegrityIssue[] = [];
 
     if (shouldCheckAccessControl) {
-      const metadataFiles = this.collectMetadataFiles(targetDir);
+      const metadataFiles = this.collectAccessControlFiles(targetDir, surfacesToCheck);
 
       for (const metadataFile of metadataFiles) {
         try {
@@ -372,10 +372,17 @@ export default class MetadataIntegrity extends SfCommand<MetadataIntegrityResult
     }
   }
 
-  private collectMetadataFiles(targetDir: string): string[] {
+  private collectAccessControlFiles(
+    targetDir: string,
+    surfacesToCheck: Set<IntegrityReferenceSurface>
+  ): string[] {
     const files = new Set<string>();
-    findFilesBySuffix(targetDir, ".profile-meta.xml").forEach((file) => files.add(file));
-    findFilesBySuffix(targetDir, ".permissionset-meta.xml").forEach((file) => files.add(file));
+    if (surfacesToCheck.has("profile")) {
+      findFilesBySuffix(targetDir, ".profile-meta.xml").forEach((file) => files.add(file));
+    }
+    if (surfacesToCheck.has("permissionSet")) {
+      findFilesBySuffix(targetDir, ".permissionset-meta.xml").forEach((file) => files.add(file));
+    }
     return Array.from(files);
   }
 
