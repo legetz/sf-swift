@@ -60,6 +60,8 @@ sf swift metadata integrity --test-with-class LegacyService --test-with-field Ac
 
 Use `.swiftrc` to control which removed metadata types and reference surfaces are checked by the integrity command. If the config omits `metadata.integrity`, built-in defaults apply.
 
+For the full `.swiftrc` reference, including formatting options, see [CONFIGURATION.md](./CONFIGURATION.md).
+
 ```yaml
 metadata:
   integrity:

@@ -13,10 +13,10 @@ sf plugins install sf-swift
 ### 2. Format your metadata
 
 ```bash
-# Optional: Init .swiftrc config to have full control for metadata adjustment rules inside your SF project
+# Optional: Init .swiftrc config for controlling metadata rules
 sf swift config init
 
-# Format all metadata in current SF project directory (uses your .swiftrc or built-in defaults)
+# Format all metadata in current SF project directory (uses .swiftrc or defaults)
 sf swift metadata adjust
 
 # Format only files changed in last 5 commits
@@ -233,7 +233,7 @@ sf swift metadata adjust --all --backup
 - Review changes carefully before committing
 - Check that metadata still deploys correctly
 
-### Configuration file (`.swiftrc`)
+### Configuration file ([.swiftrc](.swiftrc))
 
 The adjust command supports a YAML configuration file (`.swiftrc`) in your project root. This allows you to customize formatting rules, cleanup rules, and exclusions without command-line flags.
 
@@ -330,7 +330,7 @@ User configuration is used exactly as-is with **no merging** with defaults. This
 
 #### Full configuration reference
 
-For detailed documentation with before/after examples for each formatting option, see [CONFIGURATION.md](./CONFIGURATION.md).
+For detailed documentation with before/after examples for each formatting option and integrity config, see [CONFIGURATION.md](./CONFIGURATION.md).
 
 #### Project root detection
 

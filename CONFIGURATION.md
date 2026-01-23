@@ -1,6 +1,6 @@
 # Configuration Reference
 
-This document provides a complete reference for the `.swiftrc` configuration file used by SF Swift's metadata adjust command.
+This document provides a complete reference for the `.swiftrc` configuration file used by SF Swift's metadata adjust and metadata integrity commands.
 
 ## Table of Contents
 
@@ -39,7 +39,7 @@ The `.swiftrc` file is a YAML configuration file placed in your project root. It
 
 **Key behaviors:**
 - **Built-in defaults**: If no `.swiftrc` exists, the tool uses built-in defaults (no file is created)
-- **Custom config path**: Use `--config path/to/file.yaml` to specify a custom configuration file
+- **Custom config path**: Use `--config path/to/file.yaml` to specify a custom configuration file (supported by metadata adjust and metadata integrity)
 - **Implicit whitelist**: Only files matching a `metadata.adjust.formatting[].filePattern` are processed
 - **No merging**: Your configuration is used exactly as-is (no merging with defaults)
 
@@ -116,6 +116,16 @@ metadata:
     # Files that are never processed
     alwaysExcluded:
       - flow-meta.xml
+
+  integrity:
+    removedTypes: [ApexClass, CustomField, VisualforcePage]
+    rules:
+      - removedType: ApexClass
+        surfaces: [profile, permissionSet, lwc, aura, flow, apexSource]
+      - removedType: CustomField
+        surfaces: [profile, permissionSet, flow, formulaField, layout, validationRule, fieldSet, recordType, compactLayout]
+      - removedType: VisualforcePage
+        surfaces: [profile, permissionSet]
 ```
 
 You can also use a custom configuration file with the `--config` flag:
@@ -143,6 +153,18 @@ metadata:
     # Files that are never processed
     alwaysExcluded:
       - flow-meta.xml
+
+  integrity:
+    # Defines metadata types where integrity is checked
+    removedTypes: [ApexClass, CustomField, VisualforcePage]
+    rules:
+      # Defines rule per type, defines surfaces where to look broken references
+      - removedType: ApexClass
+        surfaces: [profile, permissionSet, lwc, aura, flow, apexSource]
+      - removedType: CustomField
+        surfaces: [profile, permissionSet, flow, formulaField, layout, validationRule, fieldSet, recordType, compactLayout]
+      - removedType: VisualforcePage
+        surfaces: [profile, permissionSet]
 ```
 
 ---
