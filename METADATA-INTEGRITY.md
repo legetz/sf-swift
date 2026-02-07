@@ -2,6 +2,18 @@
 
 `sf swift metadata integrity` audits your Salesforce project for dangling references after metadata deletions. The command inspects recent Git history (or simulated removals) to find Apex classes, Visualforce pages, and custom fields that were removed, then scans the rest of the workspace for anything that still references them.
 
+## Contents
+
+- [How the scan works](#how-the-scan-works)
+- [Supported reference checks](#supported-reference-checks)
+- [CLI usage highlights](#cli-usage-highlights)
+- [Key flags](#key-flags)
+- [Configuration with `.swiftrc`](#configuration-with-swiftrc)
+- [Output anatomy](#output-anatomy)
+- [Best practices](#best-practices)
+- [Limitations and roadmap](#limitations-and-roadmap)
+- [Example workflows](#example-workflows)
+
 ## How the scan works
 
 1. **Collect removals**

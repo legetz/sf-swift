@@ -4,6 +4,15 @@
 
 This project automatically publishes to npm when a version tag is pushed to the main branch.
 
+## Contents
+
+- [Automated Release via GitHub Actions](#automated-release-via-github-actions)
+- [Manual Release (Emergency Only)](#manual-release-emergency-only)
+- [Troubleshooting](#troubleshooting)
+- [Version Guidelines](#version-guidelines)
+- [Pre-release Versions](#pre-release-versions)
+- [Changelog](#changelog)
+
 ### Prerequisites
 
 1. **npm Token**: Ensure `NPM_TOKEN` secret is configured in GitHub repository settings

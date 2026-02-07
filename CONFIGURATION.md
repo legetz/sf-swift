@@ -29,7 +29,7 @@ This document provides a complete reference for the `.swiftrc` configuration fil
       - [Before (original)](#before-original-3)
       - [After (adjusted)](#after-adjusted-3)
   - [Cleanup Rules](#cleanup-rules)
-      - [Example Configuration](#example-configuration-5)
+    - [Example Configuration](#example-configuration-5)
   - [Always Excluded](#always-excluded)
   - [Tips](#tips)
 
