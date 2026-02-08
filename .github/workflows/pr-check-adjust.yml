@@ -1,8 +1,10 @@
 name: PR check/adjust
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+  # Uncomment the following to trigger on PRs
+  # pull_request:
+  #  types: [opened, synchronize, reopened]
 
 env:
   NODE_VERSION: '24'
