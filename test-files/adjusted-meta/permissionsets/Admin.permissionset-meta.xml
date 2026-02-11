@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
-    <label>Admin permissions</label>
     <classAccesses>
         <apexClass>AccountBatchController</apexClass>
         <enabled>true</enabled>
@@ -19,50 +18,51 @@
     </customPermissions>
     <fieldPermissions>
         <editable>true</editable>
-        <readable>true</readable>
         <field>Account.AccountNumber</field>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
-        <readable>true</readable>
         <field>Asset.AssetLevel</field>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
-        <readable>true</readable>
         <field>Asset.AssetProvidedById</field>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
-        <readable>true</readable>
         <field>Asset.AssetServicedById</field>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
-        <readable>true</readable>
         <field>Contact.Department</field>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
-        <readable>true</readable>
         <field>Contact.Description</field>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
-        <readable>true</readable>
         <field>Contact.DoNotCall</field>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
-        <readable>true</readable>
         <field>Test__c.Age__c</field>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
-        <readable>true</readable>
         <field>Test__c.BirthYear__c</field>
+        <readable>true</readable>
     </fieldPermissions>
     <hasActivationRequired>false</hasActivationRequired>
+    <label>Admin permissions</label>
     <objectPermissions>
         <allowCreate>true</allowCreate>
         <allowDelete>true</allowDelete>

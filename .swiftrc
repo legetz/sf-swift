@@ -24,11 +24,6 @@ metadata:
         unsortedArrays:
           - customValue
       - filePattern: permissionset-meta.xml
-        elementPriority:
-          - label
-          - description
-          - editable
-          - readable
       - filePattern: profile-meta.xml
         elementPriority:
           - editable
