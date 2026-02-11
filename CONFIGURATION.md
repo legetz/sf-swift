@@ -45,88 +45,9 @@ The `.swiftrc` file is a YAML configuration file placed in your project root. It
 
 ## Getting Started
 
-To customize the configuration, create a `.swiftrc` file in your project root. Copy this sample configuration:
-
-You can also generate the default configuration automatically:
-
-```bash
-sf swift config init
-```
+To customize the configuration, create a `.swiftrc` file in your project root by running: `sf swift config init`
 
 If a `.swiftrc` already exists, the command creates a dated backup named `.swiftrc.backup.YYYYMMDD` before writing the new file.
-
-```yaml
-# .swiftrc - SF Swift Configuration File
-# Copy this file to your project root to customize formatting rules.
-
-metadata:
-  adjust:
-    formatting:
-      - filePattern: "field-meta.xml"
-        elementPriority:
-          - fullName
-      - filePattern: "permissionset-meta.xml"
-        elementPriority:
-          - label
-          - description
-          - editable
-          - readable
-      - filePattern: "profile-meta.xml"
-        elementPriority:
-          - editable
-          - readable
-      - filePattern: "listView-meta.xml"
-        elementPriority:
-          - fullName
-        unsortedArrays:
-          - filters
-      - filePattern: "validationRule-meta.xml"
-        elementPriority:
-          - fullName
-      - filePattern: "labels-meta.xml"
-        elementPriority:
-          - fullName
-      - filePattern: "globalValueSet-meta.xml"
-        elementPriority:
-          - fullName
-        unsortedArrays:
-          - customValue
-      - filePattern: "cls-meta.xml"
-      - filePattern: "object-meta.xml"
-      - filePattern: "settings-meta.xml"
-      - filePattern: "trigger-meta.xml"
-      - filePattern: "FileUploadAndDownloadSecurity.settings-meta.xml"
-        unsortedArrays:
-          - dispositions
-
-    # Optional: cleanup rules for removing default/empty values
-    cleanup:
-      field-meta.xml:
-        - elementName: externalId
-          removeValues:
-            - "false"
-          conditions:
-            - elementName: type
-              values:
-                - Picklist
-        - elementName: description
-          removeValues:
-            - ""
-
-    # Files that are never processed
-    alwaysExcluded:
-      - flow-meta.xml
-
-  integrity:
-    removedTypes: [ApexClass, CustomField, VisualforcePage]
-    rules:
-      - removedType: ApexClass
-        surfaces: [profile, permissionSet, lwc, aura, flow, apexSource]
-      - removedType: CustomField
-        surfaces: [profile, permissionSet, flow, formulaField, layout, validationRule, fieldSet, recordType, compactLayout]
-      - removedType: VisualforcePage
-        surfaces: [profile, permissionSet]
-```
 
 You can also use a custom configuration file with the `--config` flag:
 

@@ -244,7 +244,7 @@ sf swift metadata adjust --all --backup
 
 ### Configuration file ([.swiftrc](.swiftrc))
 
-The adjust command supports a YAML configuration file (`.swiftrc`) in your project root. This allows you to customize formatting rules, cleanup rules, and exclusions without command-line flags.
+Metadata adjust and integrity commands  will support YAML configuration file (`.swiftrc`) in your project root. This allows you to customize behavior without command-line flags.
 
 #### Default behavior
 
@@ -252,7 +252,7 @@ The adjust command supports a YAML configuration file (`.swiftrc`) in your proje
 - If a `.swiftrc` file is found in your project root, it is loaded and used
 - Use `--config path/to/file.yaml` to specify a custom configuration file for `metadata adjust` or `metadata integrity`
 
-To customize the configuration, copy the sample config below to `.swiftrc` in your project root.
+To customize the configuration, run `sf swift config init` in your project root and adjust `.swiftrc` file.
 
 #### Configuration structure
 
@@ -273,15 +273,7 @@ metadata:
         unsortedArrays:
           - filters
       - filePattern: "permissionset-meta.xml"
-        elementPriority:
-          - label
-          - description
-          - editable
-          - readable
       - filePattern: "profile-meta.xml"
-        elementPriority:
-          - editable
-          - readable
 
     # Element cleanup rules for removing default/empty values
     cleanup:
