@@ -61,10 +61,7 @@ export const DEFAULT_FORMATTING_RULES: FormattingRule[] = Object.freeze([
     elementPriority: ["fullName"],
     unsortedArrays: ["customValue"]
   },
-  {
-    filePattern: "permissionset-meta.xml",
-    elementPriority: ["label", "description", "editable", "readable"]
-  },
+  { filePattern: "permissionset-meta.xml" },
   {
     filePattern: "profile-meta.xml",
     elementPriority: ["editable", "readable"]
