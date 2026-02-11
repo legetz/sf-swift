@@ -372,10 +372,7 @@ export default class MetadataIntegrity extends SfCommand<MetadataIntegrityResult
     }
   }
 
-  private collectAccessControlFiles(
-    targetDir: string,
-    surfacesToCheck: Set<IntegrityReferenceSurface>
-  ): string[] {
+  private collectAccessControlFiles(targetDir: string, surfacesToCheck: Set<IntegrityReferenceSurface>): string[] {
     const files = new Set<string>();
     if (surfacesToCheck.has("profile")) {
       findFilesBySuffix(targetDir, ".profile-meta.xml").forEach((file) => files.add(file));
