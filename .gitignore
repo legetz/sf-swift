@@ -139,3 +139,6 @@ temp*.xml
 
 .sfdx
 .sf
+
+# temp folder for scratch org pull compare script
+tmp

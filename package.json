@@ -28,6 +28,8 @@
     "test:watch": "mocha --watch",
     "prettier": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "prettier:verify": "prettier --list-different \"src/**/*.ts\" \"test/**/*.ts\"",
+    "scratch:deploy": "./scripts/scratch-deploy.sh",
+    "scratch:compare": "./scripts/scratch-pull-compare.sh",
     "prepare": "husky"
   },
   "keywords": [
