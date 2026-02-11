@@ -25,9 +25,6 @@ metadata:
           - customValue
       - filePattern: permissionset-meta.xml
       - filePattern: profile-meta.xml
-        elementPriority:
-          - editable
-          - readable
       - filePattern: cls-meta.xml
       - filePattern: object-meta.xml
       - filePattern: settings-meta.xml
