@@ -26,7 +26,8 @@
     "test": "mocha",
     "test:coverage": "nyc mocha",
     "test:watch": "mocha --watch",
-    "prettier": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "prettier": "prettier --write",
+    "prettier:all": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "prettier:verify": "prettier --list-different \"src/**/*.ts\" \"test/**/*.ts\"",
     "scratch:deploy": "./scripts/scratch-deploy.sh",
     "scratch:compare": "./scripts/scratch-pull-compare.sh",
@@ -60,12 +61,12 @@
     "@types/mocha": "^10.0.10",
     "@types/node": "^24.9.1",
     "@types/xml2js": "^0.4.14",
-    "chai": "^6.2.0",
+    "chai": "^6.2.2",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
-    "mocha": "^11.7.4",
+    "mocha": "^11.7.5",
     "nyc": "^17.1.0",
-    "prettier": "^3.6.2",
+    "prettier": "^3.8.1",
     "prettier-plugin-apex": "^2.2.6",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
@@ -74,11 +75,11 @@
     "*.ts": "prettier --write"
   },
   "dependencies": {
-    "@oclif/core": "^4.7.2",
-    "@salesforce/core": "^8.23.3",
+    "@oclif/core": "^4.8.0",
+    "@salesforce/core": "^8.26.0",
     "@salesforce/kit": "^3.2.4",
-    "@salesforce/sf-plugins-core": "^12.2.5",
-    "js-yaml": "^4.1.0",
+    "@salesforce/sf-plugins-core": "^12.2.6",
+    "js-yaml": "^4.1.1",
     "xml2js": "^0.6.2"
   }
 }
