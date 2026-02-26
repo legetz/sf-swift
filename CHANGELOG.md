@@ -7,10 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-02-26
+
 ### Added
 - 🧭 **Integrity Config**: `.swiftrc` now supports `metadata.integrity` rules to control which removed types and surfaces are scanned.
 - 🧰 **Integrity Config Flag**: Added `--config` / `-c` to `sf swift metadata integrity` to load a specific YAML file.
 - 🪄 **Config Init Defaults**: `sf swift config init` now writes built-in metadata integrity defaults into `.swiftrc`.
+- 🧪 **Scratch Org Helpers**: Added scripts to deploy and compare scratch org metadata, plus support to reuse an existing scratch org.
+- 🧩 **Default Config Template**: Added a baseline config file to align generated defaults with current metadata rules.
+
+### Changed
+- 🧱 **Metadata Sorting Defaults**: Updated Profile and PermissionSet sorting rules to match the latest formatting defaults.
+- ⚙️ **Workflow Gatekeeping**: Disabled the check-adjust step in PR workflows when it is not required.
+- 📦 **Dependencies**: Upgraded project dependencies.
+
+### Fixed
+- 🧭 **Integrity Scope Handling**: Integrity scans now honor configuration that targets Profile and PermissionSet checks independently.
+
+### Documentation
+- 📚 **Markdown Improvements**: Refined docs structure and examples across README updates.
 
 ## [1.1.0] - 2026-01-22
 
@@ -148,7 +163,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Features
 - **Command**: `sf swift metadata adjust` - Main command for sorting metadata files
 
-[Unreleased]: https://github.com/legetz/sf-swift/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/legetz/sf-swift/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/legetz/sf-swift/releases/tag/v1.2.0
 [1.1.0]: https://github.com/legetz/sf-swift/releases/tag/v1.1.0
 [1.0.18]: https://github.com/legetz/sf-swift/releases/tag/v1.0.18
 [1.0.15]: https://github.com/legetz/sf-swift/releases/tag/v1.0.15
