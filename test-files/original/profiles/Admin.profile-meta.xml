@@ -9,7 +9,7 @@
         <apexClass>AccountBatchController</apexClass>
         <enabled>true</enabled>
     </classAccesses>
-
+    <custom>false</custom>
     <fieldPermissions>
         <editable>false</editable>
         <field>Test__c.Age__c</field>
@@ -20,8 +20,6 @@
         <field>Test__c.BirthYear__c</field>
         <readable>false</readable>
     </fieldPermissions>
-    
-        <custom>false</custom>
     <fieldPermissions>
         <editable>false</editable>
         <field>Account.AccountLink__c</field>
@@ -37,7 +35,6 @@
         <field>Account.ExternalId__c</field>
         <readable>false</readable>
     </fieldPermissions>
-    
     <layoutAssignments>
         <layout>Test__c-Test_Layout</layout>
     </layoutAssignments>
