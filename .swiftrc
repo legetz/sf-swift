@@ -18,6 +18,9 @@ metadata:
       - filePattern: labels-meta.xml
         elementPriority:
           - fullName
+      - filePattern: recordType-meta.xml
+        elementPriority:
+          - fullName
       - filePattern: globalValueSet-meta.xml
         elementPriority:
           - fullName
@@ -30,6 +33,7 @@ metadata:
       - filePattern: settings-meta.xml
       - filePattern: trigger-meta.xml
       - filePattern: customPermission-meta.xml
+      - filePattern: page-meta.xml
     cleanup:
       field-meta.xml:
         - elementName: externalId
