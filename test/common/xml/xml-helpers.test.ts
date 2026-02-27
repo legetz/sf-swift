@@ -99,14 +99,14 @@ describe("common/xml/xml-helpers", () => {
       expect(rebuilt.endsWith("\n")).to.be.true;
     });
 
-    it("should convert self-closing tags to explicit open/close tags", async () => {
+    it("should preserve self-closing tags for empty elements", async () => {
       const original = "<Test><selfClosing/></Test>";
       const prefixed = prefixXmlEntities(original);
       const parsed = await parseMetadataXml(prefixed);
 
       const rebuilt = buildMetadataXml(parsed, original);
 
-      expect(rebuilt).to.contain("<selfClosing></selfClosing>");
+      expect(rebuilt).to.contain("<selfClosing/>");
     });
 
     it("should preserve XML entities after round-trip", async () => {

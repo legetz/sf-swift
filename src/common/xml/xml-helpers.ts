@@ -124,7 +124,6 @@ export function buildMetadataXml(obj: XmlObject, originalXml: string, filePath?:
 
   let xmlOutput = builder.buildObject(obj);
   xmlOutput = restoreXmlEntities(xmlOutput);
-  xmlOutput = xmlOutput.replace(/<(\w+)([^>]*)\/>/g, "<$1$2></$1>");
 
   // Apply condensed format for specified elements
   if (filePath) {
