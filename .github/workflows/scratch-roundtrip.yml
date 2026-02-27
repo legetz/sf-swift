@@ -108,10 +108,11 @@ jobs:
             exit 1
           fi
 
+          SF_ACCESS_TOKEN="$ACCESS_TOKEN"
           sf org login access-token \
             --alias "$DEVHUB_ALIAS" \
             --instance-url "$SF_INSTANCE_URL" \
-            --access-token "$ACCESS_TOKEN" \
+            --no-prompt \
             --set-default-dev-hub
 
           LATEST_API_VERSION=$(curl --silent --show-error \
