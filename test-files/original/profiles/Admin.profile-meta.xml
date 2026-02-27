@@ -1,15 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Profile xmlns="http://soap.sforce.com/2006/04/metadata">
+        <pageAccesses>
+        <apexPage>AccountBatchStart</apexPage>
+        <enabled>true</enabled>
+    </pageAccesses>
+
     <classAccesses>
         <apexClass>LimitHelper</apexClass>
         <enabled>true</enabled>
     </classAccesses>
 
+
+    
     <classAccesses>
         <apexClass>AccountBatchController</apexClass>
         <enabled>true</enabled>
     </classAccesses>
+
     <custom>false</custom>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Account.EmployeeAmount__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Account.AccountLink__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Account.ExternalId__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>Test__c.Age__c</field>
@@ -20,28 +44,9 @@
         <field>Test__c.BirthYear__c</field>
         <readable>false</readable>
     </fieldPermissions>
-    <fieldPermissions>
-        <editable>false</editable>
-        <field>Account.AccountLink__c</field>
-        <readable>false</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>false</editable>
-        <field>Account.EmployeeAmount__c</field>
-        <readable>false</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>false</editable>
-        <field>Account.ExternalId__c</field>
-        <readable>false</readable>
-    </fieldPermissions>
     <layoutAssignments>
         <layout>Test__c-Test_Layout</layout>
     </layoutAssignments>
-    <pageAccesses>
-        <apexPage>AccountBatchStart</apexPage>
-        <enabled>true</enabled>
-    </pageAccesses>
     <objectPermissions>
         <allowCreate>true</allowCreate>
         <allowDelete>true</allowDelete>
@@ -51,7 +56,7 @@
         <object>Test__c</object>
         <viewAllRecords>true</viewAllRecords>
     </objectPermissions>
-    
+
     <recordTypeVisibilities>
         <default>false</default>
         <recordType>Account.Consumer</recordType>
@@ -62,7 +67,14 @@
         <enabled>true</enabled>
         <name>AIViewInsightObjects</name>
     </userPermissions>
-    
+    <userPermissions>
+        <enabled>true</enabled>
+        <name>AccessOrchestrationObjects</name>
+    </userPermissions>
+    <userPermissions>
+        <enabled>true</enabled>
+        <name>ActivateContract</name>
+    </userPermissions>
     <userPermissions>
         <enabled>true</enabled>
         <name>ActivateOrder</name>
@@ -74,14 +86,6 @@
     <userPermissions>
         <enabled>true</enabled>
         <name>AddDirectMessageMembers</name>
-    </userPermissions>
-    <userPermissions>
-        <enabled>true</enabled>
-        <name>AccessOrchestrationObjects</name>
-    </userPermissions>
-    <userPermissions>
-        <enabled>true</enabled>
-        <name>ActivateContract</name>
     </userPermissions>
     <userPermissions>
         <enabled>true</enabled>
@@ -405,6 +409,10 @@
     </userPermissions>
     <userPermissions>
         <enabled>true</enabled>
+        <name>ManageApiNamedQueries</name>
+    </userPermissions>
+    <userPermissions>
+        <enabled>true</enabled>
         <name>ManageAuthProviders</name>
     </userPermissions>
     <userPermissions>
@@ -435,7 +443,10 @@
         <enabled>true</enabled>
         <name>ManageCertificates</name>
     </userPermissions>
-    
+    <userPermissions>
+        <enabled>true</enabled>
+        <name>ManageContentPermissions</name>
+    </userPermissions>
     <userPermissions>
         <enabled>true</enabled>
         <name>ManageContentProperties</name>
@@ -551,10 +562,6 @@
     <userPermissions>
         <enabled>true</enabled>
         <name>ManagePackageLicenses</name>
-    </userPermissions>
-    <userPermissions>
-        <enabled>true</enabled>
-        <name>ManageContentPermissions</name>
     </userPermissions>
     <userPermissions>
         <enabled>true</enabled>
@@ -794,6 +801,10 @@
     </userPermissions>
     <userPermissions>
         <enabled>true</enabled>
+        <name>ViewApiNamedQueries</name>
+    </userPermissions>
+    <userPermissions>
+        <enabled>true</enabled>
         <name>ViewClientSecret</name>
     </userPermissions>
     <userPermissions>
@@ -804,7 +815,7 @@
         <enabled>true</enabled>
         <name>ViewDataAssessment</name>
     </userPermissions>
-    <userPermissions>
+            <userPermissions>
         <enabled>true</enabled>
         <name>ViewDataCategories</name>
     </userPermissions>
@@ -844,6 +855,7 @@
         <enabled>true</enabled>
         <name>ViewPlatformEvents</name>
     </userPermissions>
+    
     <userPermissions>
         <enabled>true</enabled>
         <name>ViewPublicDashboards</name>
@@ -871,5 +883,9 @@
     <userPermissions>
         <enabled>true</enabled>
         <name>WorkCalibrationUser</name>
+    </userPermissions>
+    <userPermissions>
+        <enabled>true</enabled>
+        <name>ViewPublicCapstoneFolders</name>
     </userPermissions>
 </Profile>
