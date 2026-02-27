@@ -7,18 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-02-27
+
 ### Added
 
 - 🔁 **Scratch Roundtrip Workflow**: Added `.github/workflows/scratch-roundtrip.yml` to run scratch deploy/retrieve comparison weekly and on manual trigger using existing helper scripts.
+- 🧩 **Custom Permission Coverage**: Added support and fixtures for `customPermission-meta.xml` processing.
 
 ### Changed
 
-- 🔐 **Scratch Workflow Authentication**: Scratch roundtrip automation now uses OAuth `client_credentials` and only requires `SF_INSTANCE_URL`, `SF_CLIENT_ID`, and `SF_CLIENT_SECRET` secrets.
-- 🆕 **Latest API Version Runtime**: Scratch helper automation now resolves and uses the latest Salesforce API version at runtime for SF CLI operations.
+- 🔐 **Scratch Workflow Authentication**: Scratch roundtrip automation now uses OAuth `client_credentials`
+- 🧱 **Metadata Baseline Updates**: Updated metadata test fixtures and compatibility behavior to align with API version `66` and scratch org roundtrip outputs.
+- 📋 **Sorting Defaults**: Refined metadata sorting rules and added record type-specific formatting behavior.
+- ♻️ **Integrity Scope**: Removed Flexipage handling from integrity scanning paths.
 
 ### Fixed
 
 - 🧩 **Root XML Closing Tag**: Metadata adjust now normalizes self-closing root metadata tags (for example, `CustomObject`) into explicit opening/closing tags.
+- 🧾 **Object Metadata Empty Tag Formatting**: `object-meta.xml` now preserves empty `<searchLayouts></searchLayouts>` (not self-closing) for Salesforce compatibility.
+- 🛡️ **Scratch Script Reliability**: Improved scratch helper error handling and access token/environment handling for stable local and CI execution.
 
 ## [1.2.0] - 2026-02-26
 
@@ -202,7 +209,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Command**: `sf swift metadata adjust` - Main command for sorting metadata files
 
-[Unreleased]: https://github.com/legetz/sf-swift/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/legetz/sf-swift/compare/v1.2.1...HEAD
+[1.2.1]: https://github.com/legetz/sf-swift/releases/tag/v1.2.1
 [1.2.0]: https://github.com/legetz/sf-swift/releases/tag/v1.2.0
 [1.1.0]: https://github.com/legetz/sf-swift/releases/tag/v1.1.0
 [1.0.18]: https://github.com/legetz/sf-swift/releases/tag/v1.0.18
