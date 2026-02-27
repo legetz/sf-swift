@@ -73,7 +73,7 @@ export const DEFAULT_FORMATTING_RULES: FormattingRule[] = Object.freeze([
   { filePattern: "settings-meta.xml" },
   { filePattern: "trigger-meta.xml" },
   { filePattern: "customPermission-meta.xml" },
-  { filePattern: "page-meta.xml" },
+  { filePattern: "page-meta.xml" }
 ]) as FormattingRule[];
 
 /** @deprecated Use DEFAULT_FORMATTING_RULES instead */
@@ -163,6 +163,12 @@ export function getActiveFormattingRules(): FormattingRule[] {
   return activeFormattingRules;
 }
 
+function matchesFormattingPattern(filePath: string, filePattern: string): boolean {
+  const normalizedPath = filePath.replace(/\\/g, "/");
+  const fileName = normalizedPath.split("/").pop() ?? normalizedPath;
+  return fileName === filePattern || fileName.endsWith(`.${filePattern}`);
+}
+
 /**
  * Get formatting rule for a given file path
  */
@@ -171,7 +177,7 @@ export function getFormattingRule(filePath?: string): FormattingRule | undefined
     return undefined;
   }
 
-  return activeFormattingRules.find((rule) => filePath.endsWith(rule.filePattern));
+  return activeFormattingRules.find((rule) => matchesFormattingPattern(filePath, rule.filePattern));
 }
 
 /** @deprecated Use getFormattingRule instead */
