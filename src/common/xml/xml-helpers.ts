@@ -11,6 +11,10 @@ export interface XmlObject {
 
 const ENTITY_MARKER = "___ENTITY_MARKER___";
 
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 /**
  * Prefix XML entities with markers before parsing to preserve them
  */
@@ -124,6 +128,10 @@ export function buildMetadataXml(obj: XmlObject, originalXml: string, filePath?:
 
   let xmlOutput = builder.buildObject(obj);
   xmlOutput = restoreXmlEntities(xmlOutput);
+
+  const escapedRootName = escapeRegExp(rootName);
+  const selfClosingRootPattern = new RegExp(`^(<\\?xml[^>]*\\?>\\s*)<${escapedRootName}(\\b[^>]*)\\/>(\\s*)$`);
+  xmlOutput = xmlOutput.replace(selfClosingRootPattern, `$1<${rootName}$2></${rootName}>$3`);
 
   // Apply condensed format for specified elements
   if (filePath) {

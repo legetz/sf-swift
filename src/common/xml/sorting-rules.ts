@@ -67,7 +67,8 @@ export const DEFAULT_FORMATTING_RULES: FormattingRule[] = Object.freeze([
   { filePattern: "cls-meta.xml" },
   { filePattern: "object-meta.xml" },
   { filePattern: "settings-meta.xml" },
-  { filePattern: "trigger-meta.xml" }
+  { filePattern: "trigger-meta.xml" },
+  { filePattern: "customPermission-meta.xml" }
 ]) as FormattingRule[];
 
 /** @deprecated Use DEFAULT_FORMATTING_RULES instead */

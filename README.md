@@ -35,6 +35,7 @@ sf swift metadata adjust --git-depth 5
 ---
 
 ## Commands
+
 - [`sf swift config init`](#command-sf-swift-config-init)
 - [`sf swift metadata adjust`](#command-sf-swift-metadata-adjust)
 - [`sf swift metadata integrity`](#command-sf-swift-metadata-integrity)
@@ -66,6 +67,7 @@ Sorts and normalizes Salesforce metadata XML files with type-aware rules, entity
 - ⏭️ **Exclude Filter** - Skip specific metadata types (e.g., `--exclude field,object`)
 - 🎯 **Include Filter** - Target only specific metadata types (e.g., `--include permissionset,profile`)
 - 🧹 **Clean Formatting** - Consistent indentation and XML formatting
+- 🧩 **Root Tag Normalization** - Converts self-closing root metadata tags to explicit open/close form
 - ⏱️ **Execution Timer** - Shows how long processing took overall
 
 ### Quick start
@@ -74,7 +76,7 @@ Sorts and normalizes Salesforce metadata XML files with type-aware rules, entity
 # Process current directory
 sf swift metadata adjust
 
-# Process specific directory  
+# Process specific directory
 sf swift metadata adjust ./force-app/main/default
 
 # Process with backup (disabled by default)
@@ -113,23 +115,26 @@ sf swift metadata adjust --all --git-depth 5
 # Get help
 sf swift metadata adjust --help
 ```
+
 ### Arguments
+
 - `PATH` - Path to the SF project directory containing metadata files to process
 
 ### Flags
 
-| Flag | Short | Description | Default |
-|------|-------|-------------|---------|
-| `--target-dir` | `-d` | Target directory to process | `.` (current) |
-| `--config` | `-c` | Path to custom config file | `.swiftrc` or built-in |
-| `--git-depth` | `-g` | Process only N commits | `0` (all files) |
-| `--include` | `-i` | Only process specific types | All whitelisted types |
-| `--exclude` | `-e` | Exclude specific types | `reportType,flexipage,layout` |
-| `--all` | `-a` | Process ALL types (bypass whitelist) | Disabled |
-| `--backup` | - | Create backup before processing | Disabled |
-| `--help` | `-h` | Show help information | - |
+| Flag           | Short | Description                          | Default                       |
+| -------------- | ----- | ------------------------------------ | ----------------------------- |
+| `--target-dir` | `-d`  | Target directory to process          | `.` (current)                 |
+| `--config`     | `-c`  | Path to custom config file           | `.swiftrc` or built-in        |
+| `--git-depth`  | `-g`  | Process only N commits               | `0` (all files)               |
+| `--include`    | `-i`  | Only process specific types          | All whitelisted types         |
+| `--exclude`    | `-e`  | Exclude specific types               | `reportType,flexipage,layout` |
+| `--all`        | `-a`  | Process ALL types (bypass whitelist) | Disabled                      |
+| `--backup`     | -     | Create backup before processing      | Disabled                      |
+| `--help`       | `-h`  | Show help information                | -                             |
 
 ### Sample output
+
 ```
 🎯 Including only: permissionset, profile, translation
 🔍 Found 371 changed *-meta.xml files in last 100 commits
@@ -237,6 +242,7 @@ sf swift metadata adjust --all --backup
 ```
 
 ⚠️ **Important**: When using `--all`, be aware that some complex metadata types may have specific ordering requirements that standard alphabetical sorting doesn't preserve. Always:
+
 - Test in a non-production environment first
 - Use `--backup` flag for safety
 - Review changes carefully before committing
@@ -244,7 +250,7 @@ sf swift metadata adjust --all --backup
 
 ### Configuration file ([.swiftrc](.swiftrc))
 
-Metadata adjust and integrity commands  will support YAML configuration file (`.swiftrc`) in your project root. This allows you to customize behavior without command-line flags.
+Metadata adjust and integrity commands will support YAML configuration file (`.swiftrc`) in your project root. This allows you to customize behavior without command-line flags.
 
 #### Default behavior
 
@@ -299,27 +305,28 @@ metadata:
       - removedType: ApexClass
         surfaces: [profile, permissionSet, lwc, aura, flow, apexSource]
       - removedType: CustomField
-        surfaces: [profile, permissionSet, flow, formulaField, layout, validationRule, fieldSet, recordType, compactLayout]
+        surfaces:
+          [profile, permissionSet, flow, formulaField, layout, validationRule, fieldSet, recordType, compactLayout]
       - removedType: VisualforcePage
         surfaces: [profile, permissionSet]
 ```
 
 #### Configuration options
 
-| Section | Description |
-|---------|-------------|
-| `metadata.adjust.formatting` | Array of rules defining how to sort XML elements per file type |
-| `metadata.adjust.formatting[].filePattern` | File suffix to match (e.g., `field-meta.xml`) |
-| `metadata.adjust.formatting[].elementPriority` | Keys that appear first within each object, in order |
-| `metadata.adjust.formatting[].sortedByElements` | Keys to use for sorting array elements (first match wins) |
-| `metadata.adjust.formatting[].unsortedArrays` | Array keys that preserve original order |
-| `metadata.adjust.formatting[].condensedElements` | Elements formatted on a single line for better diffs |
-| `metadata.adjust.cleanup` | Rules for removing default/empty values per metadata type |
-| `metadata.adjust.alwaysExcluded` | File types that can never be processed |
-| `metadata.integrity.removedTypes` | Which removed metadata types to consider (ApexClass, CustomField, VisualforcePage) |
-| `metadata.integrity.rules` | Per-removed-type surface rules for integrity scans |
-| `metadata.integrity.rules[].removedType` | Removed metadata type for the rule |
-| `metadata.integrity.rules[].surfaces` | Reference surfaces to scan (e.g., profile, permissionSet, flow, layout) |
+| Section                                          | Description                                                                        |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------- |
+| `metadata.adjust.formatting`                     | Array of rules defining how to sort XML elements per file type                     |
+| `metadata.adjust.formatting[].filePattern`       | File suffix to match (e.g., `field-meta.xml`)                                      |
+| `metadata.adjust.formatting[].elementPriority`   | Keys that appear first within each object, in order                                |
+| `metadata.adjust.formatting[].sortedByElements`  | Keys to use for sorting array elements (first match wins)                          |
+| `metadata.adjust.formatting[].unsortedArrays`    | Array keys that preserve original order                                            |
+| `metadata.adjust.formatting[].condensedElements` | Elements formatted on a single line for better diffs                               |
+| `metadata.adjust.cleanup`                        | Rules for removing default/empty values per metadata type                          |
+| `metadata.adjust.alwaysExcluded`                 | File types that can never be processed                                             |
+| `metadata.integrity.removedTypes`                | Which removed metadata types to consider (ApexClass, CustomField, VisualforcePage) |
+| `metadata.integrity.rules`                       | Per-removed-type surface rules for integrity scans                                 |
+| `metadata.integrity.rules[].removedType`         | Removed metadata type for the rule                                                 |
+| `metadata.integrity.rules[].surfaces`            | Reference surfaces to scan (e.g., profile, permissionSet, flow, layout)            |
 
 #### Implicit whitelist
 
@@ -384,10 +391,10 @@ sf swift detect git conflicts --target-dir force-app/main/default
 
 ### Flags
 
-| Flag | Short | Description | Default |
-|------|-------|-------------|---------|
-| `--target-dir` | `-d` | Directory to scan for `.rej` files | `.` (current) |
-| `--json` | - | Return machine-readable output | Disabled |
+| Flag           | Short | Description                        | Default       |
+| -------------- | ----- | ---------------------------------- | ------------- |
+| `--target-dir` | `-d`  | Directory to scan for `.rej` files | `.` (current) |
+| `--json`       | -     | Return machine-readable output     | Disabled      |
 
 ### Output
 
@@ -395,15 +402,15 @@ Default output is human-readable and includes a summary plus any `.rej` file pat
 
 ```json
 {
-   "status": 1,
-   "result": {
-      "count": 2,
-      "conflictFiles": [
-         "force-app/main/default/classes/Foo.cls-meta.xml.rej",
-         "force-app/main/default/objects/Bar__c.object-meta.xml.rej"
-      ]
-   },
-   "warnings": []
+  "status": 1,
+  "result": {
+    "count": 2,
+    "conflictFiles": [
+      "force-app/main/default/classes/Foo.cls-meta.xml.rej",
+      "force-app/main/default/objects/Bar__c.object-meta.xml.rej"
+    ]
+  },
+  "warnings": []
 }
 ```
 
@@ -432,12 +439,12 @@ sf swift detect file --type .rej --json
 
 ### Flags
 
-| Flag | Short | Description | Default |
-|------|-------|-------------|---------|
-| `--target-dir` | `-d` | Directory to scan when no positional path is supplied | `.` (current) |
-| `--type` | `-t` | Repeatable suffix filter (e.g., `.rej`, `.log`). Required. | – |
-| `--max` | – | Stop the scan once this many matches have been collected | unlimited |
-| `--json` | – | Return machine-readable output | Disabled |
+| Flag           | Short | Description                                                | Default       |
+| -------------- | ----- | ---------------------------------------------------------- | ------------- |
+| `--target-dir` | `-d`  | Directory to scan when no positional path is supplied      | `.` (current) |
+| `--type`       | `-t`  | Repeatable suffix filter (e.g., `.rej`, `.log`). Required. | –             |
+| `--max`        | –     | Stop the scan once this many matches have been collected   | unlimited     |
+| `--json`       | –     | Return machine-readable output                             | Disabled      |
 
 ### Output
 
@@ -445,17 +452,13 @@ The human-readable output mirrors the git conflict detector: emoji headings, ela
 
 ```json
 {
-   "status": 1,
-   "result": {
-      "count": 3,
-      "types": [".rej", ".log"],
-      "files": [
-         "force-app/main/default/classes/Foo.cls-meta.xml.rej",
-         "scripts/tmp/apex.log",
-         "scripts/tmp/trace.log"
-      ]
-   },
-   "warnings": []
+  "status": 1,
+  "result": {
+    "count": 3,
+    "types": [".rej", ".log"],
+    "files": ["force-app/main/default/classes/Foo.cls-meta.xml.rej", "scripts/tmp/apex.log", "scripts/tmp/trace.log"]
+  },
+  "warnings": []
 }
 ```
 
@@ -489,13 +492,14 @@ sf swift metadata integrity --config ./ci/swift.yaml
 
 ### Flags
 
-| Flag | Short | Description | Default |
-|------|-------|-------------|---------|
-| `--target-dir` | `-d` | Directory to analyze when no positional path is given | `.` (current) |
-| `--config` | `-c` | Path to YAML config file (skips .swiftrc discovery) | - |
-| `--git-depth` | `-g` | Number of commits to inspect for deletions (clamped to history) | `5` |
-| `--test-with-class` | - | Treat provided Apex class names as removed metadata (repeatable). Useful when testing class-related rules without deleting code. | Disabled |
-| `--test-with-field` | - | Treat provided field API names (`Object.Field__c`) as removed metadata (repeatable). Useful for auditing field access without Git changes. | Disabled |
+| Flag                | Short | Description                                                                                                                                | Default       |
+| ------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------ | ------------- |
+| `--target-dir`      | `-d`  | Directory to analyze when no positional path is given                                                                                      | `.` (current) |
+| `--config`          | `-c`  | Path to YAML config file (skips .swiftrc discovery)                                                                                        | -             |
+| `--git-depth`       | `-g`  | Number of commits to inspect for deletions (clamped to history)                                                                            | `5`           |
+| `--test-with-class` | -     | Treat provided Apex class names as removed metadata (repeatable). Useful when testing class-related rules without deleting code.           | Disabled      |
+| `--test-with-field` | -     | Treat provided field API names (`Object.Field__c`) as removed metadata (repeatable). Useful for auditing field access without Git changes. | Disabled      |
+
 - Temporarily simulate deletions with `--test-with-class` or `--test-with-field` to audit specific classes or fields without modifying Git history
 
 ### Output
@@ -504,27 +508,27 @@ Returns a summary of deleted metadata and outstanding references. Use `--json` t
 
 ```json
 {
-   "status": 1,
-   "result": {
-      "gitDepthUsed": 5,
-      "removedItems": [
-         {
-            "type": "ApexClass",
-            "name": "ObsoleteService",
-            "referenceKey": "ObsoleteService",
-            "sourceFile": "force-app/main/default/classes/ObsoleteService.cls"
-         }
-      ],
-      "issues": [
-         {
-            "type": "MissingApexClassReference",
-            "missingItem": "ObsoleteService",
-            "referencingFile": "profiles/Admin.profile-meta.xml",
-            "detail": "Class access still enabled for removed Apex class 'ObsoleteService'"
-         }
-      ]
-   },
-   "warnings": []
+  "status": 1,
+  "result": {
+    "gitDepthUsed": 5,
+    "removedItems": [
+      {
+        "type": "ApexClass",
+        "name": "ObsoleteService",
+        "referenceKey": "ObsoleteService",
+        "sourceFile": "force-app/main/default/classes/ObsoleteService.cls"
+      }
+    ],
+    "issues": [
+      {
+        "type": "MissingApexClassReference",
+        "missingItem": "ObsoleteService",
+        "referencingFile": "profiles/Admin.profile-meta.xml",
+        "detail": "Class access still enabled for removed Apex class 'ObsoleteService'"
+      }
+    ]
+  },
+  "warnings": []
 }
 ```
 
@@ -588,10 +592,10 @@ env:
 
   # Process only defined types
   INCLUDED_TYPES: 'profile,permissionset'
-  
+
   # Only process files changed in PR (recommended)
   ADJUST_DELTA_ONLY: 'true'
-  
+
   # Or process all files in directory
   ADJUST_DELTA_ONLY: 'false'
 ```
@@ -618,10 +622,10 @@ env:
 5. **Commits** changes automatically if any files were modified
 6. **Comments** on the PR with the formatting status and scope
 
-
 ##### Customization
 
 Edit `.github/workflows/pr-metadata-adjust.yml` to:
+
 - Change `INCLUDED_TYPES` to process different metadata types
 - Set `ADJUST_DELTA_ONLY: 'true'` for PR-only processing (recommended)
 - Set `ADJUST_DELTA_ONLY: 'false'` to process all files in directory
@@ -642,24 +646,29 @@ This workflow installs the plugin, runs `sf swift detect git conflicts --json`, 
 ## Troubleshooting
 
 ### "No metadata files found"
+
 - Check you're in the right directory
 - Verify files end with `-meta.xml`
 
 ### "Git operation failed"
+
 - Ensure you're in a Git repository
 - Check git-depth doesn't exceed commit count
 
 ### "Not in the allowed whitelist"
+
 - You're trying to include a non-whitelisted metadata type
 - Use `--all` flag to bypass whitelist restrictions
 - Review the whitelisted types in the error message
 - Example: `sf swift metadata adjust --all --include reportType`
 
 ### "Permission denied"
+
 - Check file permissions
 - Use `--backup` to preserve originals if needed
 
 ### Too many backup folders
+
 - Only created when using `--backup` flag
 - Add `.backup-*` to `.gitignore`
 - Clean old backups: `rm -rf .backup-*`
@@ -667,6 +676,7 @@ This workflow installs the plugin, runs `sf swift detect git conflicts --json`, 
 ## Best Practices
 
 ✅ **DO**:
+
 - Run before committing code
 - Use git-depth for incremental checks
 - Review modified files in summary
@@ -677,6 +687,7 @@ This workflow installs the plugin, runs `sf swift detect git conflicts --json`, 
 - Use `--all --backup` when processing new metadata types
 
 ❌ **DON'T**:
+
 - Process backup folders (add to gitignore)
 - Ignore errors in CI/CD
 - Forget to commit adjusted files
@@ -688,7 +699,7 @@ This workflow installs the plugin, runs `sf swift detect git conflicts --json`, 
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Add tests if applicable  
+4. Add tests if applicable
 5. Submit a pull request
 
 ## License

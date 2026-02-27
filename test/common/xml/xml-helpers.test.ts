@@ -109,6 +109,16 @@ describe("common/xml/xml-helpers", () => {
       expect(rebuilt).to.contain("<selfClosing/>");
     });
 
+    it("should expand self-closing root elements to explicit closing tags", async () => {
+      const original = '<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata" />';
+      const prefixed = prefixXmlEntities(original);
+      const parsed = await parseMetadataXml(prefixed);
+
+      const rebuilt = buildMetadataXml(parsed, original);
+
+      expect(rebuilt).to.contain('<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata"></CustomObject>');
+    });
+
     it("should preserve XML entities after round-trip", async () => {
       const original = "<Test><quote>It&apos;s great &amp; awesome</quote></Test>";
       const prefixed = prefixXmlEntities(original);
