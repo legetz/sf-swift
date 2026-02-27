@@ -29,6 +29,7 @@ metadata:
       - filePattern: object-meta.xml
       - filePattern: settings-meta.xml
       - filePattern: trigger-meta.xml
+      - filePattern: customPermission-meta.xml
     cleanup:
       field-meta.xml:
         - elementName: externalId
