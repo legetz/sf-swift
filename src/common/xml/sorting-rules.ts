@@ -57,6 +57,10 @@ export const DEFAULT_FORMATTING_RULES: FormattingRule[] = Object.freeze([
     elementPriority: ["fullName"]
   },
   {
+    filePattern: "recordType-meta.xml",
+    elementPriority: ["fullName"]
+  },
+  {
     filePattern: "globalValueSet-meta.xml",
     elementPriority: ["fullName"],
     unsortedArrays: ["customValue"]
@@ -78,7 +82,6 @@ export const DEFAULT_SORTING_RULES = DEFAULT_FORMATTING_RULES;
  * Default array sort configurations - defines which key to use for sorting array elements
  */
 export const DEFAULT_ARRAY_SORT_KEYS: ArraySortConfig[] = Object.freeze([
-  // Permission-related arrays
   { arrayName: "fieldPermissions", sortKeys: ["field"] },
   { arrayName: "objectPermissions", sortKeys: ["object"] },
   { arrayName: "classAccesses", sortKeys: ["apexClass"] },
@@ -89,13 +92,9 @@ export const DEFAULT_ARRAY_SORT_KEYS: ArraySortConfig[] = Object.freeze([
   { arrayName: "tabVisibilities", sortKeys: ["tab"] },
   { arrayName: "pageAccesses", sortKeys: ["apexPage"] },
   { arrayName: "userPermissions", sortKeys: ["name"] },
-
-  // Package-related
+  { arrayName: "picklistValues", sortKeys: ["picklist"] },
   { arrayName: "packageVersions", sortKeys: ["namespace"] },
-
-  // State/address data
   { arrayName: "states", sortKeys: ["isoCode"] },
-
   // Generic fallbacks for common patterns
   { arrayName: "columns", sortKeys: ["_"] } // _ is the text content key
 ]) as ArraySortConfig[];

@@ -119,6 +119,18 @@ describe("common/xml/xml-helpers", () => {
       expect(rebuilt).to.contain('<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata"></CustomObject>');
     });
 
+    it("should keep empty searchLayouts expanded for object metadata", async () => {
+      const original = '<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata"><searchLayouts/></CustomObject>';
+      const prefixed = prefixXmlEntities(original);
+      const parsed = await parseMetadataXml(prefixed);
+
+      const rebuilt = buildMetadataXml(parsed, original, "objects/Test__c/Test__c.object-meta.xml");
+
+      expect(rebuilt).to.contain("<searchLayouts></searchLayouts>");
+      expect(rebuilt).to.not.contain("<searchLayouts/>");
+      expect(rebuilt).to.not.contain("<searchLayouts />");
+    });
+
     it("should preserve XML entities after round-trip", async () => {
       const original = "<Test><quote>It&apos;s great &amp; awesome</quote></Test>";
       const prefixed = prefixXmlEntities(original);

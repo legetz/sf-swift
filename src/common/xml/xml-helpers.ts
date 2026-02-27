@@ -133,6 +133,10 @@ export function buildMetadataXml(obj: XmlObject, originalXml: string, filePath?:
   const selfClosingRootPattern = new RegExp(`^(<\\?xml[^>]*\\?>\\s*)<${escapedRootName}(\\b[^>]*)\\/>(\\s*)$`);
   xmlOutput = xmlOutput.replace(selfClosingRootPattern, `$1<${rootName}$2></${rootName}>$3`);
 
+  if (filePath?.endsWith("object-meta.xml")) {
+    xmlOutput = xmlOutput.replace(/<searchLayouts\s*\/>/g, "<searchLayouts></searchLayouts>");
+  }
+
   // Apply condensed format for specified elements
   if (filePath) {
     const formattingRule = getFormattingRule(filePath);
