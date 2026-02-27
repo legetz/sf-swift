@@ -49,6 +49,15 @@ if [[ ! -d "$EXPECTED_DIR" ]]; then
   exit 1
 fi
 
+cleanup() {
+  echo "Deleting scratch org '$ALIAS'..."
+  if ! sf org delete scratch --target-org "$ALIAS" --no-prompt >/dev/null 2>&1; then
+    echo "Warning: Failed to delete scratch org '$ALIAS'."
+  fi
+}
+
+trap cleanup EXIT
+
 rm -rf "$OUTPUT_DIR" "$MANIFEST_DIR"
 mkdir -p "$OUTPUT_DIR" "$MANIFEST_DIR"
 
