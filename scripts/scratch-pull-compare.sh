@@ -10,18 +10,24 @@ MANIFEST_DIR="$ROOT_DIR/tmp/scratch-manifest"
 ALIAS="${1:-sf-swift-scratch}"
 OUTPUT_DIR="${2:-$OUTPUT_DIR}"
 WAIT_MINUTES="${3:-30}"
+API_VERSION="${SF_SWIFT_API_VERSION:-${SFDX_API_VERSION:-${SF_API_VERSION:-}}}"
+
+API_VERSION_ARGS=()
+if [[ -n "$API_VERSION" ]]; then
+  API_VERSION_ARGS=(--api-version "$API_VERSION")
+fi
 
 if ! command -v sf >/dev/null 2>&1; then
   echo "Salesforce CLI (sf) is required but not found on PATH."
   exit 1
 fi
 
-if ! sf org list --all --json | node -e 'const data = JSON.parse(require("fs").readFileSync(0, "utf8")); process.exit(data.result?.devHubs?.some((org) => org.isDefaultDevHubUsername) ? 0 : 1)'; then
+if ! sf org list --all --json "${API_VERSION_ARGS[@]}" | node -e 'const data = JSON.parse(require("fs").readFileSync(0, "utf8")); process.exit(data.result?.devHubs?.some((org) => org.isDefaultDevHubUsername) ? 0 : 1)'; then
   echo "Default Dev Hub is not set. Authenticate and set a default Dev Hub before running this script."
   exit 1
 fi
 
-if ! sf org display --target-org "$ALIAS" >/dev/null 2>&1; then
+if ! sf org display --target-org "$ALIAS" "${API_VERSION_ARGS[@]}" >/dev/null 2>&1; then
   echo "Scratch org alias '$ALIAS' not found."
   exit 1
 fi
@@ -42,7 +48,8 @@ mkdir -p "$OUTPUT_DIR" "$MANIFEST_DIR"
 echo "Generating manifest from $SOURCE_DIR"
 sf project generate manifest \
   --source-dir "$SOURCE_DIR" \
-  --output-dir "$MANIFEST_DIR"
+  --output-dir "$MANIFEST_DIR" \
+  "${API_VERSION_ARGS[@]}"
 
 echo "Retrieving source from $ALIAS to $OUTPUT_DIR"
 sf project retrieve start \
@@ -50,7 +57,8 @@ sf project retrieve start \
   --target-org "$ALIAS" \
   --output-dir "$OUTPUT_DIR" \
   --wait "$WAIT_MINUTES" \
-  --ignore-conflicts
+  --ignore-conflicts \
+  "${API_VERSION_ARGS[@]}"
 
 echo "Comparing retrieved files against $EXPECTED_DIR"
 set +e

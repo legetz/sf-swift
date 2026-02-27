@@ -9,6 +9,12 @@ ALIAS="sf-swift-scratch"
 DURATION_DAYS=1
 WAIT_MINUTES=30
 FORCE_RECREATE=false
+API_VERSION="${SF_SWIFT_API_VERSION:-${SFDX_API_VERSION:-${SF_API_VERSION:-}}}"
+
+API_VERSION_ARGS=()
+if [[ -n "$API_VERSION" ]]; then
+  API_VERSION_ARGS=(--api-version "$API_VERSION")
+fi
 
 for arg in "$@"; do
   case "$arg" in
@@ -26,7 +32,7 @@ if ! command -v sf >/dev/null 2>&1; then
   exit 1
 fi
 
-ORG_LIST_JSON=$(sf org list --all --json)
+ORG_LIST_JSON=$(sf org list --all --json "${API_VERSION_ARGS[@]}")
 if ! node -e 'const data = JSON.parse(require("fs").readFileSync(0, "utf8")); process.exit(data.result?.devHubs?.some((org) => org.isDefaultDevHubUsername) ? 0 : 1)'; then
   echo "Default Dev Hub is not set. Authenticate and set a default Dev Hub before running this script."
   exit 1
@@ -99,13 +105,15 @@ else
     --definition-file "$SCRATCH_DEF" \
     --alias "$ALIAS" \
     --duration-days "$DURATION_DAYS" \
-    --set-default
+    --set-default \
+    "${API_VERSION_ARGS[@]}"
 fi
 
 echo "Deploying source from $SOURCE_DIR to $ALIAS..."
 sf project deploy start \
   --source-dir "$SOURCE_DIR" \
   --target-org "$ALIAS" \
-  --wait "$WAIT_MINUTES"
+  --wait "$WAIT_MINUTES" \
+  "${API_VERSION_ARGS[@]}"
 
 echo "Scratch org ready: $ALIAS"

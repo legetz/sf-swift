@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- 🔁 **Scratch Roundtrip Workflow**: Added `.github/workflows/scratch-roundtrip.yml` to run scratch deploy/retrieve comparison weekly and on manual trigger using existing helper scripts.
+
+### Changed
+
+- 🔐 **Scratch Workflow Authentication**: Scratch roundtrip automation now uses OAuth `client_credentials` and only requires `SF_INSTANCE_URL`, `SF_CLIENT_ID`, and `SF_CLIENT_SECRET` secrets.
+- 🆕 **Latest API Version Runtime**: Scratch helper automation now resolves and uses the latest Salesforce API version at runtime for SF CLI operations.
+
 ### Fixed
 
 - 🧩 **Root XML Closing Tag**: Metadata adjust now normalizes self-closing root metadata tags (for example, `CustomObject`) into explicit opening/closing tags.

@@ -1,0 +1,148 @@
+name: Scratch roundtrip validation
+
+on:
+  workflow_dispatch:
+    inputs:
+      scratch_alias:
+        description: Scratch org alias/username
+        required: false
+        default: sf-swift-scratch
+      wait_minutes:
+        description: Wait time in minutes for deploy/retrieve steps
+        required: false
+        default: "30"
+      force_recreate:
+        description: Force recreation of scratch org before deploy
+        required: false
+        type: boolean
+        default: false
+      output_dir:
+        description: Output directory for retrieved metadata comparison
+        required: false
+        default: tmp/scratch-pull
+  schedule:
+    - cron: "0 5 * * 1"
+
+env:
+  NODE_VERSION: "24"
+  DEFAULT_SCRATCH_ALIAS: sf-swift-scratch
+  DEFAULT_DEVHUB_ALIAS: sf-swift-devhub
+  DEFAULT_WAIT_MINUTES: "30"
+  DEFAULT_OUTPUT_DIR: tmp/scratch-pull
+
+jobs:
+  scratch-roundtrip:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install Salesforce CLI
+        run: npm install -g @salesforce/cli
+
+      - name: Resolve runtime inputs
+        id: runtime
+        run: |
+          SCRATCH_ALIAS="${{ github.event.inputs.scratch_alias }}"
+          WAIT_MINUTES="${{ github.event.inputs.wait_minutes }}"
+          OUTPUT_DIR="${{ github.event.inputs.output_dir }}"
+          FORCE_RECREATE="${{ github.event.inputs.force_recreate }}"
+
+          if [ -z "$SCRATCH_ALIAS" ]; then
+            SCRATCH_ALIAS="${{ env.DEFAULT_SCRATCH_ALIAS }}"
+          fi
+
+          if [ -z "$WAIT_MINUTES" ]; then
+            WAIT_MINUTES="${{ env.DEFAULT_WAIT_MINUTES }}"
+          fi
+
+          if [ -z "$OUTPUT_DIR" ]; then
+            OUTPUT_DIR="${{ env.DEFAULT_OUTPUT_DIR }}"
+          fi
+
+          if [ -z "$FORCE_RECREATE" ]; then
+            FORCE_RECREATE="false"
+          fi
+
+          echo "scratch_alias=${SCRATCH_ALIAS}" >> "$GITHUB_OUTPUT"
+          echo "wait_minutes=${WAIT_MINUTES}" >> "$GITHUB_OUTPUT"
+          echo "output_dir=${OUTPUT_DIR}" >> "$GITHUB_OUTPUT"
+          echo "force_recreate=${FORCE_RECREATE}" >> "$GITHUB_OUTPUT"
+
+      - name: Authenticate Dev Hub (OAuth client_credentials)
+        env:
+          SF_INSTANCE_URL: ${{ secrets.SF_INSTANCE_URL }}
+          SF_CLIENT_ID: ${{ secrets.SF_CLIENT_ID }}
+          SF_CLIENT_SECRET: ${{ secrets.SF_CLIENT_SECRET }}
+          DEVHUB_ALIAS: ${{ env.DEFAULT_DEVHUB_ALIAS }}
+        run: |
+          for secret_name in SF_INSTANCE_URL SF_CLIENT_ID SF_CLIENT_SECRET; do
+            if [ -z "${!secret_name}" ]; then
+              echo "Missing required secret: ${secret_name}" >&2
+              exit 1
+            fi
+          done
+
+          TOKEN_RESPONSE=$(curl --fail --silent --show-error \
+            --request POST \
+            --url "${SF_INSTANCE_URL}/services/oauth2/token" \
+            --data-urlencode "grant_type=client_credentials" \
+            --data-urlencode "client_id=${SF_CLIENT_ID}" \
+            --data-urlencode "client_secret=${SF_CLIENT_SECRET}")
+
+          ACCESS_TOKEN=$(echo "$TOKEN_RESPONSE" | jq -r '.access_token // empty')
+          if [ -z "$ACCESS_TOKEN" ]; then
+            echo "Failed to retrieve OAuth access token." >&2
+            echo "$TOKEN_RESPONSE" >&2
+            exit 1
+          fi
+
+          sf org login access-token \
+            --alias "$DEVHUB_ALIAS" \
+            --instance-url "$SF_INSTANCE_URL" \
+            --access-token "$ACCESS_TOKEN" \
+            --set-default-dev-hub
+
+          LATEST_API_VERSION=$(curl --fail --silent --show-error \
+            --request GET \
+            --url "${SF_INSTANCE_URL}/services/data/" \
+            --header "Authorization: Bearer ${ACCESS_TOKEN}" | jq -r '.[].version' | sort -V | tail -n 1)
+
+          if [ -z "$LATEST_API_VERSION" ]; then
+            echo "Failed to resolve latest Salesforce API version." >&2
+            exit 1
+          fi
+
+          echo "Resolved latest Salesforce API version: ${LATEST_API_VERSION}"
+          echo "SF_SWIFT_API_VERSION=${LATEST_API_VERSION}" >> "$GITHUB_ENV"
+          echo "SFDX_API_VERSION=${LATEST_API_VERSION}" >> "$GITHUB_ENV"
+          echo "SF_API_VERSION=${LATEST_API_VERSION}" >> "$GITHUB_ENV"
+
+      - name: Deploy metadata to scratch org
+        env:
+          SCRATCH_ALIAS: ${{ steps.runtime.outputs.scratch_alias }}
+          FORCE_RECREATE: ${{ steps.runtime.outputs.force_recreate }}
+        run: |
+          if [ "$FORCE_RECREATE" = "true" ]; then
+            ./scripts/scratch-deploy.sh "$SCRATCH_ALIAS" --force
+          else
+            ./scripts/scratch-deploy.sh "$SCRATCH_ALIAS"
+          fi
+
+      - name: Retrieve and compare metadata
+        env:
+          SCRATCH_ALIAS: ${{ steps.runtime.outputs.scratch_alias }}
+          OUTPUT_DIR: ${{ steps.runtime.outputs.output_dir }}
+          WAIT_MINUTES: ${{ steps.runtime.outputs.wait_minutes }}
+        run: |
+          ./scripts/scratch-pull-compare.sh "$SCRATCH_ALIAS" "$OUTPUT_DIR" "$WAIT_MINUTES"
