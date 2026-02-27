@@ -9,7 +9,7 @@ ALIAS="sf-swift-scratch"
 DURATION_DAYS=1
 WAIT_MINUTES=30
 FORCE_RECREATE=false
-API_VERSION="${SF_SWIFT_API_VERSION:-${SFDX_API_VERSION:-${SF_API_VERSION:-66}}}"
+API_VERSION="${SF_SWIFT_API_VERSION:-${SFDX_API_VERSION:-${SF_API_VERSION:-66.0}}}"
 
 API_VERSION_ARGS=()
 if [[ -n "$API_VERSION" ]]; then
@@ -32,7 +32,13 @@ if ! command -v sf >/dev/null 2>&1; then
   exit 1
 fi
 
-ORG_LIST_JSON=$(sf org list --all --json "${API_VERSION_ARGS[@]}")
+echo "Checking Dev Hub authentication context..."
+if ! ORG_LIST_JSON=$(sf org list --all --json 2>&1); then
+  echo "Failed to list Salesforce orgs via sf CLI."
+  echo "$ORG_LIST_JSON"
+  exit 1
+fi
+
 if ! node -e 'const data = JSON.parse(require("fs").readFileSync(0, "utf8")); process.exit(data.result?.devHubs?.some((org) => org.isDefaultDevHubUsername) ? 0 : 1)'; then
   echo "Default Dev Hub is not set. Authenticate and set a default Dev Hub before running this script."
   exit 1
@@ -50,7 +56,7 @@ fi
 
 REUSE_SCRATCH=false
 if [[ "$FORCE_RECREATE" == "false" ]]; then
-  ORG_STATUS=$(node -e '
+  ORG_STATUS=$(ALIAS="$ALIAS" node -e '
     const data = JSON.parse(require("fs").readFileSync(0, "utf8"));
     const alias = process.env.ALIAS;
     const result = data.result || {};
