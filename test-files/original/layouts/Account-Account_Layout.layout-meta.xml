@@ -146,8 +146,8 @@
         <layoutColumns/>
         <style>CustomLinks</style>
     </layoutSections>
-    <showEmailCheckbox>false</showEmailCheckbox>
     <relatedObjects>ParentId</relatedObjects>
+    <showEmailCheckbox>false</showEmailCheckbox>
     <showHighlightsPanel>false</showHighlightsPanel>
     <showInteractionLogPanel>false</showInteractionLogPanel>
     <showRunAssignmentRulesCheckbox>false</showRunAssignmentRulesCheckbox>
