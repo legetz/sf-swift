@@ -108,6 +108,23 @@ jobs:
             exit 1
           fi
 
+          SF_ID_URL=$(echo "$TOKEN_RESPONSE" | jq -r '.id // empty')
+          ORG_ID=""
+          if [ -n "$SF_ID_URL" ]; then
+            ORG_ID=$(echo "$SF_ID_URL" | awk -F'/' '{print $(NF-1)}')
+          fi
+
+          SF_ACCESS_TOKEN_FOR_CLI="$SF_ACCESS_TOKEN"
+          if [[ "$SF_ACCESS_TOKEN_FOR_CLI" != *"!"* ]]; then
+            if [ -z "$ORG_ID" ]; then
+              echo "OAuth response did not include an org id (id URL), cannot normalize access token for sf CLI." >&2
+              echo "$TOKEN_RESPONSE" >&2
+              exit 1
+            fi
+            SF_ACCESS_TOKEN_FOR_CLI="${ORG_ID}!${SF_ACCESS_TOKEN_FOR_CLI}"
+          fi
+
+          SF_ACCESS_TOKEN="$SF_ACCESS_TOKEN_FOR_CLI"
           sf org login access-token \
             --alias "$DEVHUB_ALIAS" \
             --instance-url "$SF_INSTANCE_URL" \
