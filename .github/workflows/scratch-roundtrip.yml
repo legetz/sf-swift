@@ -101,14 +101,13 @@ jobs:
             --data-urlencode "client_id=${SF_CLIENT_ID}" \
             --data-urlencode "client_secret=${SF_CLIENT_SECRET}")
 
-          ACCESS_TOKEN=$(echo "$TOKEN_RESPONSE" | jq -r '.access_token // empty')
-          if [ -z "$ACCESS_TOKEN" ]; then
+          SF_ACCESS_TOKEN=$(echo "$TOKEN_RESPONSE" | jq -r '.access_token // empty')
+          if [ -z "$SF_ACCESS_TOKEN" ]; then
             echo "Failed to retrieve OAuth access token." >&2
             echo "$TOKEN_RESPONSE" >&2
             exit 1
           fi
 
-          SF_ACCESS_TOKEN="$ACCESS_TOKEN"
           sf org login access-token \
             --alias "$DEVHUB_ALIAS" \
             --instance-url "$SF_INSTANCE_URL" \
