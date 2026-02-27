@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.2] - 2026-02-27
+
+### Fixed
+
+- 🎯 **Formatting Pattern Matching**: `filePattern` matching now uses `*.PATTERN` filename semantics, so `page-meta.xml` matches `*.page-meta.xml` but not `*.flexipage-meta.xml`.
+
 ## [1.2.1] - 2026-02-27
 
 ### Added
@@ -209,7 +215,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Command**: `sf swift metadata adjust` - Main command for sorting metadata files
 
-[Unreleased]: https://github.com/legetz/sf-swift/compare/v1.2.1...HEAD
+[Unreleased]: https://github.com/legetz/sf-swift/compare/v1.2.2...HEAD
+[1.2.2]: https://github.com/legetz/sf-swift/releases/tag/v1.2.2
 [1.2.1]: https://github.com/legetz/sf-swift/releases/tag/v1.2.1
 [1.2.0]: https://github.com/legetz/sf-swift/releases/tag/v1.2.0
 [1.1.0]: https://github.com/legetz/sf-swift/releases/tag/v1.1.0
