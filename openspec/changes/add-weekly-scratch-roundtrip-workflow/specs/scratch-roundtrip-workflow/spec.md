@@ -46,7 +46,8 @@ The workflow SHALL execute Salesforce CLI authentication and org operations usin
 
 - **GIVEN** the workflow cannot resolve a latest API version from SF CLI
 - **WHEN** the API resolution step runs
-- **THEN** the workflow SHALL fail and SHALL NOT continue to deploy or retrieve metadata.
+- **THEN** the workflow SHALL fall back to API version `66`
+- **AND** continue to deploy and retrieve metadata using that fallback version.
 
 ### Requirement: Workflow reuses existing scratch scripts for deployment and comparison
 

@@ -27,6 +27,7 @@ env:
   NODE_VERSION: "24"
   DEFAULT_SCRATCH_ALIAS: sf-swift-scratch
   DEFAULT_DEVHUB_ALIAS: sf-swift-devhub
+  API_VERSION_FALLBACK: "66"
   DEFAULT_WAIT_MINUTES: "30"
   DEFAULT_OUTPUT_DIR: tmp/scratch-pull
 
@@ -113,17 +114,18 @@ jobs:
             --access-token "$ACCESS_TOKEN" \
             --set-default-dev-hub
 
-          LATEST_API_VERSION=$(curl --fail --silent --show-error \
+          LATEST_API_VERSION=$(curl --silent --show-error \
             --request GET \
             --url "${SF_INSTANCE_URL}/services/data/" \
-            --header "Authorization: Bearer ${ACCESS_TOKEN}" | jq -r '.[].version' | sort -V | tail -n 1)
+            --header "Authorization: Bearer ${ACCESS_TOKEN}" 2>/dev/null | jq -r '.[].version' 2>/dev/null | sort -V | tail -n 1 || true)
 
           if [ -z "$LATEST_API_VERSION" ]; then
-            echo "Failed to resolve latest Salesforce API version." >&2
-            exit 1
+            LATEST_API_VERSION="${{ env.API_VERSION_FALLBACK }}"
+            echo "Could not resolve latest Salesforce API version; using fallback ${LATEST_API_VERSION}."
+          else
+            echo "Resolved latest Salesforce API version: ${LATEST_API_VERSION}"
           fi
 
-          echo "Resolved latest Salesforce API version: ${LATEST_API_VERSION}"
           echo "SF_SWIFT_API_VERSION=${LATEST_API_VERSION}" >> "$GITHUB_ENV"
           echo "SFDX_API_VERSION=${LATEST_API_VERSION}" >> "$GITHUB_ENV"
           echo "SF_API_VERSION=${LATEST_API_VERSION}" >> "$GITHUB_ENV"
