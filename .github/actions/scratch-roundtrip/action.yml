@@ -1,0 +1,118 @@
+name: Scratch roundtrip check
+
+description: Authenticate to Dev Hub, resolve API version, deploy metadata to scratch org, and compare retrieved metadata.
+
+inputs:
+  sf_instance_url:
+    description: Salesforce instance URL
+    required: true
+  sf_client_id:
+    description: Salesforce connected app client ID
+    required: true
+  sf_client_secret:
+    description: Salesforce connected app client secret
+    required: true
+  devhub_alias:
+    description: Alias for Dev Hub auth
+    required: false
+    default: sf-swift-devhub
+  api_version_fallback:
+    description: API version fallback when latest cannot be resolved
+    required: false
+    default: "66"
+  scratch_alias:
+    description: Scratch org alias
+    required: false
+    default: sf-swift-scratch
+  wait_minutes:
+    description: Wait minutes for deploy/retrieve commands
+    required: false
+    default: "30"
+  output_dir:
+    description: Output directory for retrieved metadata
+    required: false
+    default: tmp/scratch-pull
+  force_recreate:
+    description: Force recreate scratch org before deploy
+    required: false
+    default: "false"
+
+runs:
+  using: composite
+  steps:
+    - name: Install Salesforce CLI
+      shell: bash
+      run: npm install -g @salesforce/cli
+
+    - name: Authenticate Dev Hub (OAuth client_credentials)
+      shell: bash
+      env:
+        SF_INSTANCE_URL: ${{ inputs.sf_instance_url }}
+        SF_CLIENT_ID: ${{ inputs.sf_client_id }}
+        SF_CLIENT_SECRET: ${{ inputs.sf_client_secret }}
+        DEVHUB_ALIAS: ${{ inputs.devhub_alias }}
+        API_VERSION_FALLBACK: ${{ inputs.api_version_fallback }}
+      run: |
+        for secret_name in SF_INSTANCE_URL SF_CLIENT_ID SF_CLIENT_SECRET; do
+          if [ -z "${!secret_name}" ]; then
+            echo "Missing required credential: ${secret_name}" >&2
+            exit 1
+          fi
+        done
+
+        TOKEN_RESPONSE=$(curl --fail --silent --show-error \
+          --request POST \
+          --url "${SF_INSTANCE_URL}/services/oauth2/token" \
+          --data-urlencode "grant_type=client_credentials" \
+          --data-urlencode "client_id=${SF_CLIENT_ID}" \
+          --data-urlencode "client_secret=${SF_CLIENT_SECRET}")
+
+        export SF_ACCESS_TOKEN=$(echo "$TOKEN_RESPONSE" | jq -r '.access_token // empty')
+        if [ -z "$SF_ACCESS_TOKEN" ]; then
+          echo "Failed to retrieve OAuth access token." >&2
+          echo "$TOKEN_RESPONSE" >&2
+          exit 1
+        fi
+
+        sf org login access-token \
+          --alias "$DEVHUB_ALIAS" \
+          --instance-url "$SF_INSTANCE_URL" \
+          --no-prompt \
+          --set-default-dev-hub
+
+        LATEST_API_VERSION=$(curl --silent --show-error \
+          --request GET \
+          --url "${SF_INSTANCE_URL}/services/data/" \
+          --header "Authorization: Bearer ${SF_ACCESS_TOKEN}" 2>/dev/null | jq -r '.[].version' 2>/dev/null | sort -V | tail -n 1 || true)
+
+        if [ -z "$LATEST_API_VERSION" ]; then
+          LATEST_API_VERSION="$API_VERSION_FALLBACK"
+          echo "Could not resolve latest Salesforce API version; using fallback ${LATEST_API_VERSION}."
+        else
+          echo "Resolved latest Salesforce API version: ${LATEST_API_VERSION}"
+        fi
+
+        echo "SF_SWIFT_API_VERSION=${LATEST_API_VERSION}" >> "$GITHUB_ENV"
+        echo "SF_ORG_API_VERSION=${LATEST_API_VERSION}" >> "$GITHUB_ENV"
+        echo "SF_API_VERSION=${LATEST_API_VERSION}" >> "$GITHUB_ENV"
+
+    - name: Deploy metadata to scratch org
+      shell: bash
+      env:
+        SCRATCH_ALIAS: ${{ inputs.scratch_alias }}
+        FORCE_RECREATE: ${{ inputs.force_recreate }}
+      run: |
+        if [ "$FORCE_RECREATE" = "true" ]; then
+          ./scripts/scratch-deploy.sh "$SCRATCH_ALIAS" --force
+        else
+          ./scripts/scratch-deploy.sh "$SCRATCH_ALIAS"
+        fi
+
+    - name: Retrieve and compare metadata
+      shell: bash
+      env:
+        SCRATCH_ALIAS: ${{ inputs.scratch_alias }}
+        OUTPUT_DIR: ${{ inputs.output_dir }}
+        WAIT_MINUTES: ${{ inputs.wait_minutes }}
+      run: |
+        ./scripts/scratch-pull-compare.sh "$SCRATCH_ALIAS" "$OUTPUT_DIR" "$WAIT_MINUTES"

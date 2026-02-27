@@ -48,9 +48,6 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
 
-      - name: Install Salesforce CLI
-        run: npm install -g @salesforce/cli
-
       - name: Resolve runtime inputs
         id: runtime
         run: |
@@ -80,71 +77,15 @@ jobs:
           echo "output_dir=${OUTPUT_DIR}" >> "$GITHUB_OUTPUT"
           echo "force_recreate=${FORCE_RECREATE}" >> "$GITHUB_OUTPUT"
 
-      - name: Authenticate Dev Hub (OAuth client_credentials)
-        env:
-          SF_INSTANCE_URL: ${{ secrets.SF_INSTANCE_URL }}
-          SF_CLIENT_ID: ${{ secrets.SF_CLIENT_ID }}
-          SF_CLIENT_SECRET: ${{ secrets.SF_CLIENT_SECRET }}
-          DEVHUB_ALIAS: ${{ env.DEFAULT_DEVHUB_ALIAS }}
-        run: |
-          for secret_name in SF_INSTANCE_URL SF_CLIENT_ID SF_CLIENT_SECRET; do
-            if [ -z "${!secret_name}" ]; then
-              echo "Missing required secret: ${secret_name}" >&2
-              exit 1
-            fi
-          done
-
-          TOKEN_RESPONSE=$(curl --fail --silent --show-error \
-            --request POST \
-            --url "${SF_INSTANCE_URL}/services/oauth2/token" \
-            --data-urlencode "grant_type=client_credentials" \
-            --data-urlencode "client_id=${SF_CLIENT_ID}" \
-            --data-urlencode "client_secret=${SF_CLIENT_SECRET}")
-
-          export SF_ACCESS_TOKEN=$(echo "$TOKEN_RESPONSE" | jq -r '.access_token // empty')
-          if [ -z "$SF_ACCESS_TOKEN" ]; then
-            echo "Failed to retrieve OAuth access token." >&2
-            echo "$TOKEN_RESPONSE" >&2
-            exit 1
-          fi
-
-          sf org login access-token \
-            --alias "$DEVHUB_ALIAS" \
-            --instance-url "$SF_INSTANCE_URL" \
-            --no-prompt \
-            --set-default-dev-hub
-
-          LATEST_API_VERSION=$(curl --silent --show-error \
-            --request GET \
-            --url "${SF_INSTANCE_URL}/services/data/" \
-            --header "Authorization: Bearer ${SF_ACCESS_TOKEN}" 2>/dev/null | jq -r '.[].version' 2>/dev/null | sort -V | tail -n 1 || true)
-
-          if [ -z "$LATEST_API_VERSION" ]; then
-            LATEST_API_VERSION="${{ env.API_VERSION_FALLBACK }}"
-            echo "Could not resolve latest Salesforce API version; using fallback ${LATEST_API_VERSION}."
-          else
-            echo "Resolved latest Salesforce API version: ${LATEST_API_VERSION}"
-          fi
-
-          echo "SF_SWIFT_API_VERSION=${LATEST_API_VERSION}" >> "$GITHUB_ENV"
-          echo "SF_ORG_API_VERSION=${LATEST_API_VERSION}" >> "$GITHUB_ENV"
-          echo "SF_API_VERSION=${LATEST_API_VERSION}" >> "$GITHUB_ENV"
-
-      - name: Deploy metadata to scratch org
-        env:
-          SCRATCH_ALIAS: ${{ steps.runtime.outputs.scratch_alias }}
-          FORCE_RECREATE: ${{ steps.runtime.outputs.force_recreate }}
-        run: |
-          if [ "$FORCE_RECREATE" = "true" ]; then
-            ./scripts/scratch-deploy.sh "$SCRATCH_ALIAS" --force
-          else
-            ./scripts/scratch-deploy.sh "$SCRATCH_ALIAS"
-          fi
-
-      - name: Retrieve and compare metadata
-        env:
-          SCRATCH_ALIAS: ${{ steps.runtime.outputs.scratch_alias }}
-          OUTPUT_DIR: ${{ steps.runtime.outputs.output_dir }}
-          WAIT_MINUTES: ${{ steps.runtime.outputs.wait_minutes }}
-        run: |
-          ./scripts/scratch-pull-compare.sh "$SCRATCH_ALIAS" "$OUTPUT_DIR" "$WAIT_MINUTES"
+      - name: Run scratch roundtrip
+        uses: ./.github/actions/scratch-roundtrip
+        with:
+          sf_instance_url: ${{ secrets.SF_INSTANCE_URL }}
+          sf_client_id: ${{ secrets.SF_CLIENT_ID }}
+          sf_client_secret: ${{ secrets.SF_CLIENT_SECRET }}
+          devhub_alias: ${{ env.DEFAULT_DEVHUB_ALIAS }}
+          api_version_fallback: ${{ env.API_VERSION_FALLBACK }}
+          scratch_alias: ${{ steps.runtime.outputs.scratch_alias }}
+          wait_minutes: ${{ steps.runtime.outputs.wait_minutes }}
+          output_dir: ${{ steps.runtime.outputs.output_dir }}
+          force_recreate: ${{ steps.runtime.outputs.force_recreate }}

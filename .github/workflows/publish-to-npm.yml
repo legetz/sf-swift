@@ -3,73 +3,108 @@ name: Publish to NPM
 on:
   push:
     tags:
-      - 'v*'  # Triggers on version tags like v1.0.0, v2.1.3, etc.
+      - "v*" # Triggers on version tags like v1.0.0, v2.1.3, etc.
 
 env:
-  NODE_VERSION: '24'
+  NODE_VERSION: "24"
+  API_VERSION_FALLBACK: "66"
+  DEFAULT_SCRATCH_ALIAS: "sf-swift-scratch"
+  DEFAULT_WAIT_MINUTES: "30"
+  DEFAULT_OUTPUT_DIR: "tmp/scratch-pull"
+  DEFAULT_DEVHUB_ALIAS: "sf-swift-devhub"
 
 jobs:
   prepare:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1  # Fetch minimal history for faster checkout
-      
+          fetch-depth: 1 # Fetch minimal history for faster checkout
+
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
-          registry-url: 'https://registry.npmjs.org'
-          cache: 'npm'
-      
+          registry-url: "https://registry.npmjs.org"
+          cache: "npm"
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Build project
         run: npm run build
-        
+
       - name: Run tests
         run: npm test
-      
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: dist
           path: dist/
           retention-days: 1
-  
-  publish:
+
+  scratch-roundtrip:
     runs-on: ubuntu-latest
     needs: prepare
-    
+
     permissions:
       contents: read
-      id-token: write  # Required for npm provenance
-    
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Run scratch roundtrip
+        uses: ./.github/actions/scratch-roundtrip
+        with:
+          sf_instance_url: ${{ secrets.SF_INSTANCE_URL }}
+          sf_client_id: ${{ secrets.SF_CLIENT_ID }}
+          sf_client_secret: ${{ secrets.SF_CLIENT_SECRET }}
+          devhub_alias: ${{ env.DEFAULT_DEVHUB_ALIAS }}
+          api_version_fallback: ${{ env.API_VERSION_FALLBACK }}
+          scratch_alias: ${{ env.DEFAULT_SCRATCH_ALIAS }}
+          wait_minutes: ${{ env.DEFAULT_WAIT_MINUTES }}
+          output_dir: ${{ env.DEFAULT_OUTPUT_DIR }}
+          force_recreate: "false"
+
+  publish:
+    runs-on: ubuntu-latest
+    needs: [prepare, scratch-roundtrip]
+
+    permissions:
+      contents: read
+      id-token: write # Required for npm provenance
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0 # Fetch all history for accurate provenance
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
-          registry-url: 'https://registry.npmjs.org'
-          cache: 'npm'
+          registry-url: "https://registry.npmjs.org"
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
           name: dist
           path: dist/
-      
+
       - name: Publish to npm
         run: npm publish
