@@ -127,7 +127,7 @@ jobs:
           fi
 
           echo "SF_SWIFT_API_VERSION=${LATEST_API_VERSION}" >> "$GITHUB_ENV"
-          echo "SFDX_API_VERSION=${LATEST_API_VERSION}" >> "$GITHUB_ENV"
+          echo "SF_ORG_API_VERSION=${LATEST_API_VERSION}" >> "$GITHUB_ENV"
           echo "SF_API_VERSION=${LATEST_API_VERSION}" >> "$GITHUB_ENV"
 
       - name: Deploy metadata to scratch org
