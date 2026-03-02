@@ -123,6 +123,7 @@ sf project deploy start \
   --source-dir "$SOURCE_DIR" \
   --target-org "$ALIAS" \
   --wait "$WAIT_MINUTES" \
+  --ignore-conflicts \
   "${API_VERSION_ARGS[@]}"
 
 echo "Scratch org ready: $ALIAS"
