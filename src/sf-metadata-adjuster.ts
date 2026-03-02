@@ -102,6 +102,12 @@ export class SfMetadataAdjuster {
     console.error(...args);
   }
 
+  private matchesMetadataPattern(fileOrType: string, pattern: string): boolean {
+    const normalized = fileOrType.replace(/\\/g, "/");
+    const fileName = normalized.split("/").pop() ?? normalized;
+    return fileName === pattern || fileName.endsWith(`.${pattern}`);
+  }
+
   /**
    * Validate that include types have formatting rules when --all is not specified
    */
@@ -115,7 +121,7 @@ export class SfMetadataAdjuster {
     const nonWhitelistedTypes: string[] = [];
 
     for (const includeType of this.includeTypes) {
-      const isAllowed = allowedPatterns.some((pattern) => includeType.endsWith(pattern));
+      const isAllowed = allowedPatterns.some((pattern) => this.matchesMetadataPattern(includeType, pattern));
 
       if (!isAllowed) {
         nonWhitelistedTypes.push(includeType);
@@ -144,7 +150,7 @@ export class SfMetadataAdjuster {
 
     for (const includeType of this.includeTypes) {
       for (const alwaysExcludedType of alwaysExcluded) {
-        if (includeType.endsWith(alwaysExcludedType)) {
+        if (this.matchesMetadataPattern(includeType, alwaysExcludedType)) {
           conflictingTypes.push(includeType);
           break;
         }
@@ -169,13 +175,15 @@ export class SfMetadataAdjuster {
 
     // Always exclude types that require special handling
     const alwaysExcluded = getAlwaysExcluded();
-    const isAlwaysExcluded = alwaysExcluded.some((excludePattern) => fileName.endsWith(excludePattern));
+    const isAlwaysExcluded = alwaysExcluded.some((excludePattern) =>
+      this.matchesMetadataPattern(fileName, excludePattern)
+    );
     if (isAlwaysExcluded) {
       return true;
     }
 
     // Check user-specified exclusion list
-    return this.excludeTypes.some((excludePattern) => fileName.endsWith(excludePattern));
+    return this.excludeTypes.some((excludePattern) => this.matchesMetadataPattern(fileName, excludePattern));
   }
 
   /**
@@ -186,13 +194,13 @@ export class SfMetadataAdjuster {
 
     // If include types are specified, check against them
     if (this.includeTypes.length > 0) {
-      return this.includeTypes.some((includePattern) => fileName.endsWith(includePattern));
+      return this.includeTypes.some((includePattern) => this.matchesMetadataPattern(fileName, includePattern));
     }
 
     // If no include types specified and --all is NOT used, check against formatting patterns
     if (!this.allowAll) {
       const allowedPatterns = getAllowedFilePatterns();
-      return allowedPatterns.some((pattern) => fileName.endsWith(pattern));
+      return allowedPatterns.some((pattern) => this.matchesMetadataPattern(fileName, pattern));
     }
 
     // If --all is used and no specific includes, accept all files (except excludes)
@@ -281,7 +289,7 @@ export class SfMetadataAdjuster {
   private cleanupElements(xmlObject: XmlObject, filePath: string): XmlObject {
     // Find matching metadata type rule
     const cleanupRules = getCleanupRules();
-    const metadataType = Object.keys(cleanupRules).find((type) => filePath.endsWith(type));
+    const metadataType = Object.keys(cleanupRules).find((type) => this.matchesMetadataPattern(filePath, type));
 
     if (!metadataType) {
       return xmlObject; // No cleanup rules for this type

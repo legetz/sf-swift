@@ -80,4 +80,32 @@ describe("metadata-adjust", () => {
       expect(actualContents, `Mismatch detected in ${relativePath}`).to.equal(expectedContents);
     }
   });
+
+  it("does not treat flexipage-meta.xml as page-meta.xml when using formatting whitelist", async () => {
+    tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "metadata-adjust-page-only-"));
+    copyDirectory(originalRoot, tempRoot);
+
+    const flexipageRelativePath = path.join("flexipages", "TestPage.flexipage-meta.xml");
+    const flexipagePath = path.join(tempRoot, flexipageRelativePath);
+    const originalFlexipage = fs.readFileSync(flexipagePath, "utf8");
+
+    const pageOnlyConfig = {
+      metadata: {
+        adjust: {
+          formatting: [{ filePattern: "page-meta.xml" }],
+          cleanup: {},
+          alwaysExcluded: []
+        }
+      }
+    };
+
+    const adjuster = new SfMetadataAdjuster(tempRoot, {
+      silent: true,
+      config: pageOnlyConfig
+    });
+    await adjuster.process(false);
+
+    const updatedFlexipage = fs.readFileSync(flexipagePath, "utf8");
+    expect(updatedFlexipage).to.equal(originalFlexipage);
+  });
 });

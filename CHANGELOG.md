@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ⚙️ **Explicit Closing Defaults**: When `explicitClosingElements` is omitted in a matching formatting rule, built-in defaults are applied; setting `explicitClosingElements: []` disables those defaults.
 - 🧹 **Scratch Compare Cleanup Control**: `scripts/scratch-pull-compare.sh` now supports `--no-cleanup` to skip `sf org delete scratch` on exit.
 
+### Fixed
+
+- 🧭 **Pattern Whitelist Precision**: Metadata adjust now applies `*.PATTERN` matching consistently for include/exclude/whitelist checks, so `page-meta.xml` no longer matches `flexipage-meta.xml`.
+
 ## [1.2.2] - 2026-02-27
 
 ### Fixed
