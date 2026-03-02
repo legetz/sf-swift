@@ -1,15 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <FlexiPage xmlns="http://soap.sforce.com/2006/04/metadata">
+<masterLabel>TestPage</masterLabel>
+<sobjectType>Test__c</sobjectType>
+<type>RecordPage</type>
+<template>
+<name>flexipage:recordHomeSingleColNoHeaderTemplateDesktop</name>
+<properties>
+<name>enablePageActionConfig</name>
+<value>false</value>
+</properties>
+</template>
     <flexiPageRegions>
         <itemInstances>
-            <fieldInstance>
-                <fieldInstanceProperties>
-                    <name>uiBehavior</name>
-                    <value>none</value>
-                </fieldInstanceProperties>
-                <fieldItem>Record.BirthYear__c</fieldItem>
-                <identifier>RecordBirthYear_cField</identifier>
-            </fieldInstance>
+        <fieldInstance>
+        <fieldInstanceProperties>
+        <name>uiBehavior</name>
+        <value>none</value>
+        </fieldInstanceProperties>
+        <fieldItem>Record.BirthYear__c</fieldItem>
+        <identifier>RecordBirthYear_cField</identifier>
+        </fieldInstance>
         </itemInstances>
         <itemInstances>
             <fieldInstance>
@@ -114,14 +124,4 @@
         <name>main</name>
         <type>Region</type>
     </flexiPageRegions>
-<masterLabel>TestPage</masterLabel>
-<sobjectType>Test__c</sobjectType>
-<template>
-<name>flexipage:recordHomeSingleColNoHeaderTemplateDesktop</name>
-<properties>
-<name>enablePageActionConfig</name>
-<value>false</value>
-</properties>
-</template>
-<type>RecordPage</type>
 </FlexiPage>

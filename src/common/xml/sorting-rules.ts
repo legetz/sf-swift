@@ -80,7 +80,11 @@ export const DEFAULT_FORMATTING_RULES: FormattingRule[] = Object.freeze([
   { filePattern: "settings-meta.xml" },
   { filePattern: "trigger-meta.xml" },
   { filePattern: "customPermission-meta.xml" },
-  { filePattern: "page-meta.xml" }
+  { filePattern: "page-meta.xml" },
+  {
+    filePattern: "flexipage-meta.xml",
+    unsortedArrays: ["flexiPageRegions"]
+  }
 ]) as FormattingRule[];
 
 /** @deprecated Use DEFAULT_FORMATTING_RULES instead */
