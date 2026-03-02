@@ -7,14 +7,40 @@ EXPECTED_DIR="$ROOT_DIR/test-files/adjusted-meta"
 OUTPUT_DIR="$ROOT_DIR/tmp/scratch-pull"
 MANIFEST_DIR="$ROOT_DIR/tmp/scratch-manifest"
 
-ALIAS="${1:-sf-swift-scratch}"
-OUTPUT_DIR="${2:-$OUTPUT_DIR}"
-WAIT_MINUTES="${3:-30}"
+ALIAS="sf-swift-scratch"
+WAIT_MINUTES="30"
+NO_CLEANUP=false
 API_VERSION="${SF_SWIFT_API_VERSION:-${SF_ORG_API_VERSION:-${SF_API_VERSION:-66.0}}}"
 
 API_VERSION_ARGS=()
 if [[ -n "$API_VERSION" ]]; then
   API_VERSION_ARGS=(--api-version "$API_VERSION")
+fi
+
+usage() {
+  echo "Usage: $0 [alias] [--no-cleanup]"
+}
+
+POSITIONAL_ARGS=()
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --no-cleanup)
+      NO_CLEANUP=true
+      shift
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      POSITIONAL_ARGS+=("$1")
+      shift
+      ;;
+  esac
+done
+
+if [[ ${#POSITIONAL_ARGS[@]} -gt 0 ]]; then
+  ALIAS="${POSITIONAL_ARGS[0]}"
 fi
 
 if ! command -v sf >/dev/null 2>&1; then
@@ -53,6 +79,11 @@ if [[ ! -d "$EXPECTED_DIR" ]]; then
 fi
 
 cleanup() {
+  if [[ "$NO_CLEANUP" == "true" ]]; then
+    echo "Skipping scratch org cleanup (--no-cleanup)."
+    return
+  fi
+
   echo "Deleting scratch org '$ALIAS'..."
   if ! sf org delete scratch --target-org "$ALIAS" --no-prompt >/dev/null 2>&1; then
     echo "Warning: Failed to delete scratch org '$ALIAS'."

@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - ⚙️ **Explicit Closing Defaults**: When `explicitClosingElements` is omitted in a matching formatting rule, built-in defaults are applied; setting `explicitClosingElements: []` disables those defaults.
+- 🧹 **Scratch Compare Cleanup Control**: `scripts/scratch-pull-compare.sh` now supports `--no-cleanup` to skip `sf org delete scratch` on exit.
 
 ## [1.2.2] - 2026-02-27
 
