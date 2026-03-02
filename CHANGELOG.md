@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-03-02
+
 ### Added
 
 - 🧩 **Explicit Closing Rule**: Added `metadata.adjust.formatting[].explicitClosingElements` to force selected empty XML nodes to render as `<tag></tag>`.
@@ -229,7 +231,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Command**: `sf swift metadata adjust` - Main command for sorting metadata files
 
-[Unreleased]: https://github.com/legetz/sf-swift/compare/v1.2.2...HEAD
+[Unreleased]: https://github.com/legetz/sf-swift/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/legetz/sf-swift/releases/tag/v1.3.0
 [1.2.2]: https://github.com/legetz/sf-swift/releases/tag/v1.2.2
 [1.2.1]: https://github.com/legetz/sf-swift/releases/tag/v1.2.1
 [1.2.0]: https://github.com/legetz/sf-swift/releases/tag/v1.2.0
