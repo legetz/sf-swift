@@ -136,10 +136,11 @@ function enforceExplicitClosingTags(xmlString: string): string {
     return `<${tagName}${cleanedAttrs}></${tagName}>`;
   });
 }
-
+/*
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
+*/
 
 /**
  * Prefix XML entities with markers before parsing to preserve them
@@ -266,9 +267,11 @@ export function buildMetadataXml(obj: XmlObject, originalXml: string, filePath?:
   xmlOutput = restoreXmlEntities(xmlOutput);
   xmlOutput = enforceExplicitClosingTags(xmlOutput);
 
+  /*
   const escapedRootName = escapeRegExp(rootName);
   const selfClosingRootPattern = new RegExp(`^(<\\?xml[^>]*\\?>\\s*)<${escapedRootName}(\\b[^>]*)\\/>(\\s*)$`);
   xmlOutput = xmlOutput.replace(selfClosingRootPattern, `$1<${rootName}$2></${rootName}>$3`);
+  */
 
   if (filePath?.endsWith("object-meta.xml")) {
     xmlOutput = xmlOutput.replace(/<searchLayouts\s*\/>/g, "<searchLayouts></searchLayouts>");
