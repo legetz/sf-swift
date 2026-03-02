@@ -14,8 +14,8 @@ describe("common/xml/sorting-rules", () => {
       expect(pageRule?.filePattern).to.equal("page-meta.xml");
     });
 
-    it("does not match flexipage files for page-meta.xml pattern", () => {
-      const rule = getFormattingRule("force-app/main/default/flexipages/Record.flexipage-meta.xml");
+    it("does not match somepage files for page-meta.xml pattern", () => {
+      const rule = getFormattingRule("force-app/main/default/flexipages/Record.somepage-meta.xml");
 
       expect(rule).to.be.undefined;
     });
