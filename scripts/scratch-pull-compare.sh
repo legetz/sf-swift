@@ -23,11 +23,14 @@ if ! command -v sf >/dev/null 2>&1; then
 fi
 
 echo "Checking Dev Hub authentication context..."
-if ! ORG_LIST_JSON=$(sf org list --all --json 2>&1); then
+ORG_LIST_ERR_FILE=$(mktemp)
+if ! ORG_LIST_JSON=$(sf org list --all --json 2>"$ORG_LIST_ERR_FILE"); then
   echo "Failed to list Salesforce orgs via sf CLI."
-  echo "$ORG_LIST_JSON"
+  cat "$ORG_LIST_ERR_FILE"
+  rm -f "$ORG_LIST_ERR_FILE"
   exit 1
 fi
+rm -f "$ORG_LIST_ERR_FILE"
 
 if ! node -e 'const data = JSON.parse(require("fs").readFileSync(0, "utf8")); process.exit(data.result?.devHubs?.some((org) => org.isDefaultDevHubUsername) ? 0 : 1)'; then
   echo "Default Dev Hub is not set. Authenticate and set a default Dev Hub before running this script."
