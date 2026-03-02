@@ -3,5 +3,9 @@
   "edition": "developer",
   "language": "en_US",
   "features": [],
-  "settings": {}
+  "settings": {
+    "accountSettings": {
+      "enableRelateContactToMultipleAccounts": true
+    }
+  }
 }
