@@ -13,6 +13,8 @@ export interface FormattingRule {
   unsortedArrays?: string[];
   /** Element keys that should be condensed to single-line format for better diff readability */
   condensedElements?: string[];
+  /** Dot-separated element paths that must render with explicit closing tags when empty (supports '*' wildcard segments) */
+  explicitClosingElements?: string[];
 }
 
 /** @deprecated Use elementPriority instead */
@@ -37,7 +39,8 @@ export interface ArraySortConfig {
 export const DEFAULT_FORMATTING_RULES: FormattingRule[] = Object.freeze([
   {
     filePattern: "field-meta.xml",
-    elementPriority: ["fullName"]
+    elementPriority: ["fullName"],
+    explicitClosingElements: ["lookupFilter.filterItems.*.value"]
   },
   {
     filePattern: "FileUploadAndDownloadSecurity.settings-meta.xml",
@@ -50,7 +53,8 @@ export const DEFAULT_FORMATTING_RULES: FormattingRule[] = Object.freeze([
   {
     filePattern: "listView-meta.xml",
     elementPriority: ["fullName"],
-    unsortedArrays: ["filters"]
+    unsortedArrays: ["filters"],
+    explicitClosingElements: ["sharedTo.allInternalUsers"]
   },
   {
     filePattern: "labels-meta.xml",
@@ -177,7 +181,24 @@ export function getFormattingRule(filePath?: string): FormattingRule | undefined
     return undefined;
   }
 
-  return activeFormattingRules.find((rule) => matchesFormattingPattern(filePath, rule.filePattern));
+  const activeRule = activeFormattingRules.find((rule) => matchesFormattingPattern(filePath, rule.filePattern));
+  if (!activeRule) {
+    return undefined;
+  }
+
+  if (activeRule.explicitClosingElements !== undefined) {
+    return activeRule;
+  }
+
+  const defaultRule = DEFAULT_FORMATTING_RULES.find((rule) => matchesFormattingPattern(filePath, rule.filePattern));
+  if (!defaultRule?.explicitClosingElements) {
+    return activeRule;
+  }
+
+  return {
+    ...activeRule,
+    explicitClosingElements: [...defaultRule.explicitClosingElements]
+  };
 }
 
 /** @deprecated Use getFormattingRule instead */

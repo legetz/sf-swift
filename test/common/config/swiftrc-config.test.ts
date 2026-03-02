@@ -88,6 +88,11 @@ describe("common/config/swiftrc-config", () => {
       const fieldRule = config.metadata.adjust.formatting.find((r) => r.filePattern === "field-meta.xml");
       expect(fieldRule).to.exist;
       expect(fieldRule?.elementPriority).to.include("fullName");
+      expect(fieldRule?.explicitClosingElements).to.deep.equal(["lookupFilter.filterItems.*.value"]);
+
+      const listViewRule = config.metadata.adjust.formatting.find((r) => r.filePattern === "listView-meta.xml");
+      expect(listViewRule).to.exist;
+      expect(listViewRule?.explicitClosingElements).to.deep.equal(["sharedTo.allInternalUsers"]);
     });
 
     it("should include alwaysExcluded types", () => {
@@ -192,6 +197,42 @@ describe("common/config/swiftrc-config", () => {
       });
 
       expect(result.metadata.adjust.formatting[0].condensedElements).to.deep.equal(["fieldPermissions"]);
+    });
+
+    it("should accept explicitClosingElements in formatting rules", () => {
+      const result = validateConfig({
+        metadata: {
+          adjust: {
+            formatting: [
+              {
+                filePattern: "field-meta.xml",
+                explicitClosingElements: ["lookupFilter.filterItems.*.value"]
+              }
+            ]
+          }
+        }
+      });
+
+      expect(result.metadata.adjust.formatting[0].explicitClosingElements).to.deep.equal([
+        "lookupFilter.filterItems.*.value"
+      ]);
+    });
+
+    it("should reject non-array explicitClosingElements", () => {
+      expect(() =>
+        validateConfig({
+          metadata: {
+            adjust: {
+              formatting: [
+                {
+                  filePattern: "field-meta.xml",
+                  explicitClosingElements: "lookupFilter.filterItems.*.value"
+                }
+              ]
+            }
+          }
+        })
+      ).to.throw(/metadata\.adjust\.formatting\[0\]\.explicitClosingElements must be an array/);
     });
 
     it("should validate cleanup structure", () => {

@@ -10,6 +10,132 @@ export interface XmlObject {
 }
 
 const ENTITY_MARKER = "___ENTITY_MARKER___";
+const EXPLICIT_CLOSE_ATTR = "__sfSwiftExplicitClose";
+
+function splitPath(pathValue: string): string[] {
+  return pathValue
+    .split(".")
+    .map((segment) => segment.trim())
+    .filter((segment) => segment.length > 0);
+}
+
+function pathMatches(patternSegments: string[], actualSegments: string[]): boolean {
+  if (patternSegments.length !== actualSegments.length) {
+    return false;
+  }
+
+  for (let index = 0; index < patternSegments.length; index++) {
+    const pattern = patternSegments[index];
+    const actual = actualSegments[index];
+    if (pattern !== "*" && pattern !== actual) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function hasMeaningfulValue(value: unknown): boolean {
+  if (value === null || value === undefined) {
+    return false;
+  }
+
+  if (typeof value === "string") {
+    return value.trim().length > 0;
+  }
+
+  if (Array.isArray(value)) {
+    return value.some((item) => hasMeaningfulValue(item));
+  }
+
+  if (typeof value === "object") {
+    const obj = value as Record<string, unknown>;
+    const textValue = obj._;
+    if (typeof textValue === "string" && textValue.trim().length > 0) {
+      return true;
+    }
+
+    const childKeys = Object.keys(obj).filter((key) => key !== "$" && key !== "_");
+    return childKeys.some((key) => hasMeaningfulValue(obj[key]));
+  }
+
+  return true;
+}
+
+function markValueAsExplicitClosing(value: unknown): unknown {
+  if (value === null || value === undefined || value === "") {
+    return { $: { [EXPLICIT_CLOSE_ATTR]: "true" } };
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((item) => (hasMeaningfulValue(item) ? item : { $: { [EXPLICIT_CLOSE_ATTR]: "true" } }));
+  }
+
+  if (typeof value === "object") {
+    if (hasMeaningfulValue(value)) {
+      return value;
+    }
+
+    const obj = value as Record<string, unknown>;
+    const attrs = typeof obj.$ === "object" && obj.$ !== null ? { ...(obj.$ as Record<string, string>) } : {};
+    attrs[EXPLICIT_CLOSE_ATTR] = "true";
+    return {
+      ...obj,
+      $: attrs
+    };
+  }
+
+  return value;
+}
+
+function applyExplicitClosingElements(
+  node: unknown,
+  pathSegments: string[],
+  explicitPathPatterns: string[][]
+): unknown {
+  if (node === null || node === undefined) {
+    return node;
+  }
+
+  if (Array.isArray(node)) {
+    const nextPath = node.length > 1 ? [...pathSegments, "*"] : pathSegments;
+    return node.map((item) => applyExplicitClosingElements(item, nextPath, explicitPathPatterns));
+  }
+
+  if (typeof node !== "object") {
+    return node;
+  }
+
+  const obj = node as Record<string, unknown>;
+  const result: Record<string, unknown> = { ...obj };
+
+  for (const [key, value] of Object.entries(obj)) {
+    if (key === "$" || key === "_") {
+      continue;
+    }
+
+    const currentPath = [...pathSegments, key];
+    const shouldMarkExplicitClosing = explicitPathPatterns.some((pattern) => pathMatches(pattern, currentPath));
+    const processedValue = applyExplicitClosingElements(value, currentPath, explicitPathPatterns);
+    result[key] = shouldMarkExplicitClosing ? markValueAsExplicitClosing(processedValue) : processedValue;
+  }
+
+  return result;
+}
+
+function enforceExplicitClosingTags(xmlString: string): string {
+  const explicitCloseAttrPattern = new RegExp(`\\s${EXPLICIT_CLOSE_ATTR}="true"`, "g");
+  const selfClosingPattern = new RegExp(`<(\\w[\\w:-]*)([^>]*)\\/>`, "g");
+
+  return xmlString.replace(selfClosingPattern, (match, tagName, attrs) => {
+    if (!String(attrs).includes(`${EXPLICIT_CLOSE_ATTR}="true"`)) {
+      return match;
+    }
+
+    const cleanedAttrs = String(attrs).replace(explicitCloseAttrPattern, "");
+    return `<${tagName}${cleanedAttrs}></${tagName}>`;
+  });
+}
 
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -108,6 +234,16 @@ export function buildMetadataXml(obj: XmlObject, originalXml: string, filePath?:
     }
   }
 
+  let outputObject = obj;
+  if (filePath) {
+    const formattingRule = getFormattingRule(filePath);
+    const explicitClosingElements = formattingRule?.explicitClosingElements;
+    if (explicitClosingElements && explicitClosingElements.length > 0) {
+      const explicitPathPatterns = explicitClosingElements.map((pathValue) => splitPath(pathValue));
+      outputObject = applyExplicitClosingElements(obj, [], explicitPathPatterns) as XmlObject;
+    }
+  }
+
   const builder = new xml2js.Builder({
     renderOpts: {
       pretty: true,
@@ -126,8 +262,9 @@ export function buildMetadataXml(obj: XmlObject, originalXml: string, filePath?:
     allowSurrogateChars: false
   });
 
-  let xmlOutput = builder.buildObject(obj);
+  let xmlOutput = builder.buildObject(outputObject);
   xmlOutput = restoreXmlEntities(xmlOutput);
+  xmlOutput = enforceExplicitClosingTags(xmlOutput);
 
   const escapedRootName = escapeRegExp(rootName);
   const selfClosingRootPattern = new RegExp(`^(<\\?xml[^>]*\\?>\\s*)<${escapedRootName}(\\b[^>]*)\\/>(\\s*)$`);

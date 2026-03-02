@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- 🧩 **Explicit Closing Rule**: Added `metadata.adjust.formatting[].explicitClosingElements` to force selected empty XML nodes to render as `<tag></tag>`.
+- ✳️ **Wildcard Path Support**: `explicitClosingElements` now supports `*` for single-segment path matching (for example, `lookupFilter.filterItems.*.value`).
+
+### Changed
+
+- ⚙️ **Explicit Closing Defaults**: When `explicitClosingElements` is omitted in a matching formatting rule, built-in defaults are applied; setting `explicitClosingElements: []` disables those defaults.
+
 ## [1.2.2] - 2026-02-27
 
 ### Fixed

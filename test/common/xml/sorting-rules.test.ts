@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { getFormattingRule, resetFormattingRules } from "../../../src/common/xml/sorting-rules.js";
+import { getFormattingRule, resetFormattingRules, setFormattingRules } from "../../../src/common/xml/sorting-rules.js";
 
 describe("common/xml/sorting-rules", () => {
   afterEach(() => {
@@ -25,6 +25,32 @@ describe("common/xml/sorting-rules", () => {
 
       expect(rule).to.not.be.undefined;
       expect(rule?.filePattern).to.equal("FileUploadAndDownloadSecurity.settings-meta.xml");
+    });
+
+    it("uses default explicitClosingElements when config omits that field", () => {
+      setFormattingRules([
+        {
+          filePattern: "listView-meta.xml",
+          elementPriority: ["fullName"]
+        }
+      ]);
+
+      const rule = getFormattingRule("force-app/main/default/objects/Test__c/listViews/Recent.listView-meta.xml");
+
+      expect(rule?.explicitClosingElements).to.deep.equal(["sharedTo.allInternalUsers"]);
+    });
+
+    it("does not use default explicitClosingElements when config sets an empty array", () => {
+      setFormattingRules([
+        {
+          filePattern: "listView-meta.xml",
+          explicitClosingElements: []
+        }
+      ]);
+
+      const rule = getFormattingRule("force-app/main/default/objects/Test__c/listViews/Recent.listView-meta.xml");
+
+      expect(rule?.explicitClosingElements).to.deep.equal([]);
     });
   });
 });

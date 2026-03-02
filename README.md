@@ -273,11 +273,15 @@ metadata:
       - filePattern: "field-meta.xml"
         elementPriority:
           - fullName
+        explicitClosingElements:
+          - lookupFilter.filterItems.*.value
       - filePattern: "listView-meta.xml"
         elementPriority:
           - fullName
         unsortedArrays:
           - filters
+        explicitClosingElements:
+          - sharedTo.allInternalUsers
       - filePattern: "permissionset-meta.xml"
       - filePattern: "profile-meta.xml"
 
@@ -321,6 +325,7 @@ metadata:
 | `metadata.adjust.formatting[].sortedByElements`  | Keys to use for sorting array elements (first match wins)                          |
 | `metadata.adjust.formatting[].unsortedArrays`    | Array keys that preserve original order                                            |
 | `metadata.adjust.formatting[].condensedElements` | Elements formatted on a single line for better diffs                               |
+| `metadata.adjust.formatting[].explicitClosingElements` | Element paths that must render as `<tag></tag>` when empty (`*` matches one segment) |
 | `metadata.adjust.cleanup`                        | Rules for removing default/empty values per metadata type                          |
 | `metadata.adjust.alwaysExcluded`                 | File types that can never be processed                                             |
 | `metadata.integrity.removedTypes`                | Which removed metadata types to consider (ApexClass, CustomField, VisualforcePage) |
@@ -334,7 +339,7 @@ Files are **whitelisted implicitly** by having a `metadata.adjust.formatting` ru
 
 #### No merging
 
-User configuration is used exactly as-is with **no merging** with defaults. This ensures predictable behavior—what you configure is exactly what you get.
+User configuration is used exactly as-is with **no merging** with defaults. The only exception is `explicitClosingElements`: when omitted in a matching formatting rule, built-in explicit-closing defaults for that metadata type are applied; setting it to `[]` disables those defaults.
 
 #### Full configuration reference
 

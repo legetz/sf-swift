@@ -28,8 +28,12 @@ This document provides a complete reference for the `.swiftrc` configuration fil
       - [Example Configuration](#example-configuration-4)
       - [Before (original)](#before-original-3)
       - [After (adjusted)](#after-adjusted-3)
+    - [explicitClosingElements](#explicitclosingelements)
+      - [Example Configuration](#example-configuration-5)
+      - [Before (original)](#before-original-4)
+      - [After (adjusted)](#after-adjusted-4)
   - [Cleanup Rules](#cleanup-rules)
-    - [Example Configuration](#example-configuration-5)
+    - [Example Configuration](#example-configuration-6)
   - [Always Excluded](#always-excluded)
   - [Tips](#tips)
 
@@ -41,7 +45,7 @@ The `.swiftrc` file is a YAML configuration file placed in your project root. It
 - **Built-in defaults**: If no `.swiftrc` exists, the tool uses built-in defaults (no file is created)
 - **Custom config path**: Use `--config path/to/file.yaml` to specify a custom configuration file (supported by metadata adjust and metadata integrity)
 - **Implicit whitelist**: Only files matching a `metadata.adjust.formatting[].filePattern` are processed
-- **No merging**: Your configuration is used exactly as-is (no merging with defaults)
+- **No merging**: Your configuration is used exactly as-is (no merging with defaults), except `explicitClosingElements` uses internal defaults when omitted
 
 ## Getting Started
 
@@ -92,7 +96,7 @@ metadata:
 
 ## Formatting Options
 
-Each formatting rule targets a specific file pattern and can include four optional formatting directives.
+Each formatting rule targets a specific file pattern and can include five optional formatting directives.
 
 ### elementPriority
 
@@ -363,6 +367,62 @@ metadata:
 ```
 
 **Result**: Each `fieldPermissions` and `objectPermissions` entry is on a single line. Adding or removing a field permission now shows as a single-line change in git diffs.
+
+---
+
+### explicitClosingElements
+
+**Purpose**: Forces selected empty elements to render as explicit opening/closing tags (`<tag></tag>`) instead of self-closing tags (`<tag/>`).
+
+**Use case**: Some Salesforce metadata nodes must keep explicit closing tags for compatibility (for example, list view sharing targets and lookup filter values).
+
+#### Example Configuration
+
+```yaml
+metadata:
+  adjust:
+    formatting:
+      - filePattern: "field-meta.xml"
+        explicitClosingElements:
+          - lookupFilter.filterItems.*.value
+      - filePattern: "listView-meta.xml"
+        explicitClosingElements:
+          - sharedTo.allInternalUsers
+```
+
+Notes:
+- Paths are dot-separated and relative to the metadata root element.
+- `*` matches exactly one path segment (useful for repeated array items).
+- If `explicitClosingElements` is omitted for a matching file pattern, built-in defaults are used.
+- If `explicitClosingElements: []` is set, built-in defaults are disabled for that file pattern.
+
+#### Before (original)
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <lookupFilter>
+        <filterItems>
+            <value />
+        </filterItems>
+    </lookupFilter>
+</CustomField>
+```
+
+#### After (adjusted)
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <lookupFilter>
+        <filterItems>
+            <value></value>
+        </filterItems>
+    </lookupFilter>
+</CustomField>
+```
+
+**Result**: Configured empty nodes are written with explicit closing tags.
 
 ---
 

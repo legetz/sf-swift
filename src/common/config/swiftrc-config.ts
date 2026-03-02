@@ -186,6 +186,15 @@ export function validateConfig(rawConfig: unknown): SwiftrcConfig {
       formattingRule.condensedElements = ruleObj.condensedElements as string[];
     }
 
+    if (ruleObj.explicitClosingElements !== undefined) {
+      if (!Array.isArray(ruleObj.explicitClosingElements)) {
+        throw new Error(
+          `.swiftrc: metadata.adjust.formatting[${index}].explicitClosingElements must be an array of strings.`
+        );
+      }
+      formattingRule.explicitClosingElements = ruleObj.explicitClosingElements as string[];
+    }
+
     formattingRules.push(formattingRule);
   }
   adjustConfig.formatting = formattingRules;

@@ -196,6 +196,105 @@ describe("common/xml/xml-helpers", () => {
       expect(rebuilt).to.contain("    <fieldPermissions>");
       expect(rebuilt).to.contain("        <editable>true</editable>");
     });
+
+    it("should use default explicit closing tags when explicitClosingElements is omitted in config", async () => {
+      setFormattingRules([
+        {
+          filePattern: "listView-meta.xml"
+        }
+      ]);
+
+      const original = `<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Last30Days</fullName>
+    <sharedTo>
+        <allInternalUsers />
+    </sharedTo>
+</ListView>`;
+
+      const prefixed = prefixXmlEntities(original);
+      const parsed = await parseMetadataXml(prefixed);
+      const rebuilt = buildMetadataXml(parsed, original, "objects/Test__c/listViews/Last30Days.listView-meta.xml");
+
+      expect(rebuilt).to.contain("<allInternalUsers></allInternalUsers>");
+      expect(rebuilt).to.not.contain("<allInternalUsers/>");
+      expect(rebuilt).to.not.contain("<allInternalUsers />");
+      expect(rebuilt).to.not.contain("__sfSwiftExplicitClose");
+
+      resetFormattingRules();
+    });
+
+    it("should not apply defaults when explicitClosingElements is an empty array", async () => {
+      setFormattingRules([
+        {
+          filePattern: "listView-meta.xml",
+          explicitClosingElements: []
+        }
+      ]);
+
+      const original = `<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Last30Days</fullName>
+    <sharedTo>
+        <allInternalUsers />
+    </sharedTo>
+</ListView>`;
+
+      const prefixed = prefixXmlEntities(original);
+      const parsed = await parseMetadataXml(prefixed);
+      const rebuilt = buildMetadataXml(parsed, original, "objects/Test__c/listViews/Last30Days.listView-meta.xml");
+
+      expect(rebuilt).to.satisfy(
+        (text: string) => text.includes("<allInternalUsers/>") || text.includes("<allInternalUsers />")
+      );
+      expect(rebuilt).to.not.contain("<allInternalUsers></allInternalUsers>");
+
+      resetFormattingRules();
+    });
+
+    it("should support wildcard explicitClosingElements paths", async () => {
+      setFormattingRules([
+        {
+          filePattern: "field-meta.xml",
+          explicitClosingElements: ["lookupFilter.filterItems.*.value"]
+        }
+      ]);
+
+      const original = `<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ContactId</fullName>
+    <lookupFilter>
+        <active>true</active>
+        <filterItems>
+            <field>Contact.FirstName</field>
+            <operation>equals</operation>
+            <value>Test</value>
+        </filterItems>
+        <filterItems>
+            <field>Contact.LastName</field>
+            <operation>notEqual</operation>
+            <value></value>
+        </filterItems>
+        <isOptional>true</isOptional>
+    </lookupFilter>
+    <type>Lookup</type>
+</CustomField>`;
+
+      const prefixed = prefixXmlEntities(original);
+      const parsed = await parseMetadataXml(prefixed);
+      const rebuilt = buildMetadataXml(
+        parsed,
+        original,
+        "objects/AccountContactRelation/fields/ContactId.field-meta.xml"
+      );
+
+      expect(rebuilt).to.contain("<value></value>");
+      expect(rebuilt).to.not.contain("<value/>");
+      expect(rebuilt).to.not.contain("<value />");
+      expect(rebuilt).to.not.contain("__sfSwiftExplicitClose");
+
+      resetFormattingRules();
+    });
   });
 
   describe("condenseElement", () => {
