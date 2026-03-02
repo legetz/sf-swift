@@ -112,8 +112,23 @@ sf project retrieve start \
 
 echo "Comparing retrieved files against $EXPECTED_DIR"
 set +e
-diff -ru "$OUTPUT_DIR" "$EXPECTED_DIR"
-DIFF_STATUS=$?
+DIFF_STATUS=0
+
+while IFS= read -r -d '' EXPECTED_FILE; do
+  RELATIVE_PATH="${EXPECTED_FILE#"$EXPECTED_DIR"/}"
+  OUTPUT_FILE="$OUTPUT_DIR/$RELATIVE_PATH"
+
+  if [[ ! -f "$OUTPUT_FILE" ]]; then
+    echo "Missing file in retrieved output: $RELATIVE_PATH"
+    DIFF_STATUS=1
+    continue
+  fi
+
+  if ! diff -u "$EXPECTED_FILE" "$OUTPUT_FILE"; then
+    DIFF_STATUS=1
+  fi
+done < <(find "$EXPECTED_DIR" -type f -print0)
+
 set -e
 
 if [[ $DIFF_STATUS -ne 0 ]]; then
