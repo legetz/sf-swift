@@ -16,4 +16,7 @@
         <value>TODAY</value>
     </filters>
     <label>Last 30 Days</label>
+    <sharedTo>
+        <allInternalUsers></allInternalUsers>
+    </sharedTo>
 </ListView>
