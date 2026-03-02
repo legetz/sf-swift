@@ -73,7 +73,10 @@ export const DEFAULT_FORMATTING_RULES: FormattingRule[] = Object.freeze([
   { filePattern: "permissionset-meta.xml" },
   { filePattern: "profile-meta.xml" },
   { filePattern: "cls-meta.xml" },
-  { filePattern: "object-meta.xml" },
+  {
+    filePattern: "object-meta.xml",
+    unsortedArrays: ["articleTypeTemplates"]
+  },
   { filePattern: "settings-meta.xml" },
   { filePattern: "trigger-meta.xml" },
   { filePattern: "customPermission-meta.xml" },
