@@ -4,6 +4,8 @@ metadata:
       - filePattern: field-meta.xml
         elementPriority:
           - fullName
+        explicitClosingElements:
+          - lookupFilter.filterItems.*.value
       - filePattern: FileUploadAndDownloadSecurity.settings-meta.xml
         unsortedArrays:
           - dispositions
@@ -15,6 +17,8 @@ metadata:
           - fullName
         unsortedArrays:
           - filters
+        explicitClosingElements:
+          - sharedTo.allInternalUsers
       - filePattern: labels-meta.xml
         elementPriority:
           - fullName
@@ -30,10 +34,15 @@ metadata:
       - filePattern: profile-meta.xml
       - filePattern: cls-meta.xml
       - filePattern: object-meta.xml
+        unsortedArrays:
+          - articleTypeTemplates
       - filePattern: settings-meta.xml
       - filePattern: trigger-meta.xml
       - filePattern: customPermission-meta.xml
       - filePattern: page-meta.xml
+      - filePattern: flexipage-meta.xml
+        unsortedArrays:
+          - flexiPageRegions
     cleanup:
       field-meta.xml:
         - elementName: externalId
