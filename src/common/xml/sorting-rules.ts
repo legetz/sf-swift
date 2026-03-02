@@ -69,7 +69,6 @@ export const DEFAULT_FORMATTING_RULES: FormattingRule[] = Object.freeze([
     elementPriority: ["fullName"],
     unsortedArrays: ["customValue"]
   },
-  // Additional types that are allowed for processing (no special formatting rules)
   { filePattern: "permissionset-meta.xml" },
   { filePattern: "profile-meta.xml" },
   { filePattern: "cls-meta.xml" },
@@ -83,7 +82,7 @@ export const DEFAULT_FORMATTING_RULES: FormattingRule[] = Object.freeze([
   { filePattern: "page-meta.xml" },
   {
     filePattern: "flexipage-meta.xml",
-    unsortedArrays: ["flexiPageRegions"]
+    unsortedArrays: ["flexiPageRegions", "valueListItems", "criteria"]
   }
 ]) as FormattingRule[];
 
